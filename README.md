@@ -2,5 +2,5 @@
 
 This repository is a part of the Synthetic Cabin Project
 
-### maintainer: Thummanoon Kunanuntakij (TK)
+**Maintainer:** Thummanoon Kunanuntakij (TK)
 
