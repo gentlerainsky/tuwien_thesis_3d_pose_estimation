@@ -129,7 +129,26 @@ class PoseEstimator2D:
             backend='matplotlib',
             # kpt_color=(255, 255, 0),
             # det_kpt_color='green',
-            link_color='green'
+            # link_color='green'
+            link_color=[
+                (255, 0, 0),
+                (255, 128, 0),
+                (255, 255, 0),
+                (128, 255, 0),
+                (0, 255, 0),
+                (0, 255, 128),
+                (0, 255, 255),
+                (0, 128, 255),
+                (0, 0, 255),
+                (64, 0, 255),
+                (191, 0, 255),
+                (255, 0, 64),
+                (255, 0, 0),
+                (140, 115, 115),
+                (128, 50, 128),
+                (0, 0, 0),
+                (0, 0, 0),
+            ]
         )
         gt_instances = InstanceData()
         gt_instances.keypoints = gt_keypoints
