@@ -33,14 +33,52 @@ class PoseEstimator2D:
         self.config.load_from = self.pretrained_path
         self.config.work_dir = working_directory
         self.config.log_level = log_level
-        self.update_config()
+        # self.update_config()
 
     def update_config(self):
+        self.config.train_cfg['by_epoch'] = True
+        # self.config.train_cfg['max_iters'] = 1000
+        self.config.train_cfg['val_interval'] = 1
+        self.config.train_cfg['max_epochs'] = 10
+
+        self.config.train_dataloader['dataset']['data_root'] = self.data_root
+        self.config.train_dataloader['dataset']['ann_file'] = os.path.join(
+            self.config.data_root, 'annotations/person_keypoints_train.json')
+        # self.config.train_dataloader['dataset']['ann_file'] = 'annotations/person_keypoints_train.json'
+        self.config.val_dataloader['dataset']['bbox_file'] = os.path.join(
+            self.config.data_root, 'person_detection_results/human_detection_train.json')
+        self.config.train_dataloader['dataset']['data_prefix']['img'] = 'images/train'
+
+        self.config.val_dataloader['dataset']['data_root'] = self.config.data_root
+        self.config.val_dataloader['dataset']['ann_file'] = os.path.join(
+            self.config.data_root, 'annotations/person_keypoints_val.json')
+        # self.config.val_dataloader['dataset']['bbox_file'] = os.path.join(
+        #   self.config.data_root, 'person_detection_results/ground_truth_human_detection_val.json')
+        self.config.val_dataloader['dataset']['bbox_file'] = os.path.join(
+            self.config.data_root, 'person_detection_results/human_detection_val.json')
+        # self.config.val_dataloader['dataset']['ann_file'] = 'annotations/person_keypoints_val.json'
+        # self.config.val_dataloader['dataset']['bbox_file'] = 'person_detection_results/ground_truth_val.json'
+        self.config.val_dataloader['dataset']['data_prefix']['img'] = 'images/val'
+
+        self.config.test_dataloader['dataset']['data_root'] = self.config.data_root
+        self.config.test_dataloader['dataset']['ann_file'] = os.path.join(
+            self.config.data_root, 'annotations/person_keypoints_test.json')
+        # self.config.test_dataloader['dataset']['ann_file'] = 'annotations/person_keypoints_test.json'
+        self.config.test_dataloader['dataset']['bbox_file'] = os.path.join(
+            self.config.data_root, 'person_detection_results/ground_truth_human_detection_test.json')
+        # self.config.test_dataloader['dataset']['bbox_file'] = 'person_detection_results/ground_truth_test.json'
+        self.config.test_dataloader['dataset']['data_prefix']['img'] = 'images/test'
+        self.config.val_evaluator.ann_file = os.path.join(self.config.data_root, 'annotations/person_keypoints_val.json')
+        self.config.test_evaluator.ann_file = os.path.join(self.config.data_root, 'annotations/person_keypoints_test.json')
+        # self.config.val_evaluator.ann_file = 'annotations/person_keypoints_val.json'
+        # self.config.test_evaluator.ann_file = 'annotations/person_keypoints_test.json'
         self.runner = Runner.from_cfg(self.config)
         self.model = self.runner.model
         self.model.cfg = self.runner.cfg
 
     def load_pretrained(self):
+        self.config.load_from = self.checkpoint_path
+        self.update_config()
         self.model = init_model(
             config=self.config_path,
             checkpoint=self.checkpoint_path,
@@ -48,31 +86,16 @@ class PoseEstimator2D:
         )
 
     def finetune(self):
-        self.config.train_cfg['by_epoch'] = False
-        self.config.train_cfg['max_iters'] = 1000
-        self.config.train_cfg['val_interval'] = 100
-
-        self.config.train_dataloader['dataset']['data_root'] = self.data_root
-        self.config.train_dataloader['dataset']['ann_file'] = os.path.join(self.config.data_root, 'annotations/person_keypoints_train.json')
-        self.config.train_dataloader['dataset']['data_prefix']['img'] = 'images/train'
-
-        self.config.val_dataloader['dataset']['data_root'] = self.config.data_root
-        self.config.val_dataloader['dataset']['ann_file'] = os.path.join(self.config.data_root, 'annotations/person_keypoints_val.json')
-        self.config.val_dataloader['dataset']['bbox_file'] = os.path.join(self.config.data_root, 'person_detection_results/ground_truth_val.json')
-        self.config.val_dataloader['dataset']['data_prefix']['img'] = 'images/val'
-
-        self.config.test_dataloader['dataset']['data_root'] = self.config.data_root
-        self.config.test_dataloader['dataset']['ann_file'] = os.path.join(self.config.data_root, 'annotations/person_keypoints_test.json')
-        self.config.test_dataloader['dataset']['bbox_file'] = os.path.join(self.config.data_root, 'person_detection_results/ground_truth_test.json')
-        self.config.test_dataloader['dataset']['data_prefix']['img'] = 'images/test'
-        self.config.val_evaluator.ann_file = os.path.join(self.config.data_root, 'annotations/person_keypoints_val.json')
-        self.config.test_evaluator.ann_file = os.path.join(self.config.data_root, 'annotations/person_keypoints_test.json')
         self.update_config()
         self.model.train()
         self.runner.train()
         with open(os.path.join(self.config.work_dir, 'last_checkpoint')) as f:
             filepath = f.readline()
             self.checkpoint_path = filepath
+
+    def test(self):
+        # self.update_config()
+        self.runner.test()
 
     def inference(self, img_path, bboxes, bbox_format):
         img = mmcv.imread(img_path)

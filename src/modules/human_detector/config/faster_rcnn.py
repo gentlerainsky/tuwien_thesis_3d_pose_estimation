@@ -41,11 +41,11 @@ param_scheduler = [
 ]
 
 # # max_epochs
-# train_cfg = dict(max_epochs=0.1)
-max_iters = 1000
-train_cfg = dict(_delete_=True, type='IterBasedTrainLoop', val_interval=max_iters, max_iters=max_iters)
+train_cfg = dict(max_epochs=1)
+# max_iters = 1000
+# train_cfg = dict(_delete_=True, type='IterBasedTrainLoop', val_interval=max_iters, max_iters=max_iters)
 # # log config/times
-default_hooks = dict(logger=dict(interval=100))
+default_hooks = dict(logger=dict(interval=500))
 
 dataset_type = "CocoDataset"
 data_root = "/root/data/processed/synthetic_cabin_bw/A_Pillar_Codriver/"
@@ -116,6 +116,12 @@ val_evaluator = dict(
     backend_args=backend_args,
 )
 test_evaluator = val_evaluator
+
+visualizer = dict(vis_backends=[
+    dict(type='LocalVisBackend'),
+    dict(type='TensorboardVisBackend'),
+    dict(type='WandbVisBackend'),
+])
 
 work_dir = "human_detector_wd"
 

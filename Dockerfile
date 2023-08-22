@@ -26,6 +26,7 @@ RUN mim install mmpose
 RUN mim install mmcv
 RUN apt-get -y install git wget
 RUN mim install mmdet
-
+RUN pip install tensorboard
+RUN pip install wandb
 ADD Makefile /workspace
 # ADD requirements.txt /workspace

@@ -55,7 +55,10 @@ class HumanDetector:
     
     def get_bbox(self, img_path):
         result = self.inference(img_path)
-        return result.pred_instances['bboxes']
+        return {
+            'bboxes': result.pred_instances['bboxes'],
+            'scores': result.pred_instances['scores']
+        }
 
     def visualise(self, img_path):
         img = mmcv.imread(img_path)
