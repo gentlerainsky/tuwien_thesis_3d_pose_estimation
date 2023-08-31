@@ -51,6 +51,6 @@ class GroundTruthKeypointDataset():
 
     def __getitem__(self, idx):
         sample = self.samples[idx]
-        return sample['keypoints2D'][:, :2].reshape(-1, 1), sample['keypoints3D'].reshape(-1, 1)
+        return sample['keypoints2D'][:, :2], sample['keypoints3D']
         # return sample
 

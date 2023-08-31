@@ -23,23 +23,31 @@ class HumanDetector:
         self.checkpoint_path = checkpoint_path
         self.data_root_path = data_root_path
         self.device = device
+        self.working_directory = working_directory
+        self.log_level = log_level
+
+    def update_config(self):
         self.config = Config.fromfile(self.config_path)
-        self.config.data_root = data_root_path
-        self.config.load_from = self.pretrained_path
-        self.config.work_dir = working_directory
-        self.config.log_level = log_level
+        self.config.data_root = self.data_root_path
+        if self.load_from_checkpoint:
+            self.config.load_from = self.checkpoint_path
+        else:
+            self.config.load_from = self.pretrained_path
+        self.config.work_dir = self.working_directory
+        self.config.log_level = self.log_level
+        self.runner = Runner.from_cfg(self.config)
+        self.model = self.runner.model
+        self.model.cfg = self.runner.cfg
         self.runner = Runner.from_cfg(self.config)
         self.model = self.runner.model
         self.model.cfg = self.runner.cfg
 
     def load_pretrained(self):
-        self.model = init_detector(
-            self.config_path,
-            self.checkpoint_path,
-            device=self.device
-        )
+        self.load_from_checkpoint = True
+        self.update_config()
 
     def finetune(self):
+        self.update_config()
         self.model.train()
         self.runner.train()
         with open(os.path.join(self.config.work_dir, 'last_checkpoint')) as f:
@@ -74,6 +82,10 @@ class HumanDetector:
         # img = mpimg.imread('your_image.png')
         imgplot = plt.imshow(visualizer.get_image())
         plt.show()
+
+    def test(self):
+        # self.update_config()
+        self.runner.test()
 
 
 if __name__ == '__main__':

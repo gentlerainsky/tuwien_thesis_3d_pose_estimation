@@ -28,14 +28,20 @@ class PoseEstimator2D:
         self.checkpoint_path = checkpoint_path
         self.data_root = data_root_path
         self.device = device
-        self.config = Config.fromfile(self.config_path)
-        self.config.data_root = self.data_root
-        self.config.load_from = self.pretrained_path
-        self.config.work_dir = working_directory
-        self.config.log_level = log_level
+        self.load_from_checkpoint = False
+        self.working_directory = working_directory
+        self.log_level = log_level
         # self.update_config()
 
     def update_config(self):
+        self.config = Config.fromfile(self.config_path)
+        self.config.data_root = self.data_root
+        if self.load_from_checkpoint:
+            self.config.load_from = self.checkpoint_path
+        else:
+            self.config.load_from = self.pretrained_path
+        self.config.work_dir = self.working_directory
+        self.config.log_level = self.log_level
         self.config.train_cfg['by_epoch'] = True
         # self.config.train_cfg['max_iters'] = 1000
         self.config.train_cfg['val_interval'] = 1
@@ -77,13 +83,8 @@ class PoseEstimator2D:
         self.model.cfg = self.runner.cfg
 
     def load_pretrained(self):
-        self.config.load_from = self.checkpoint_path
+        self.load_from_checkpoint = True
         self.update_config()
-        self.model = init_model(
-            config=self.config_path,
-            checkpoint=self.checkpoint_path,
-            device=self.device
-        )
 
     def finetune(self):
         self.update_config()

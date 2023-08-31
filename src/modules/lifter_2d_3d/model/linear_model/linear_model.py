@@ -54,22 +54,16 @@ class Linear(nn.Module):
         Returns:
             y (torch.Tensor): Output tensor.
         """
-        # print(f'x.shape = {x.shape}')
-        # print(f'linear layer 1: {self.w1.weight.shape}')
         h = self.w1(x)
-        # print('here 2')
         h = self.bn1(h)
         h = self.relu(h)
         h = self.dropout(h)
         
-        # print(f'x2.shape = {x.shape}')
         h = self.w2(h)
         h = self.bn2(h)
         h = self.relu(h)
         h = self.dropout(h)
-        # print(f'x3.shape = {x.shape}')
         y = x + h
-        # print(f'y.shape = {y.shape}')
         return y
 
 
