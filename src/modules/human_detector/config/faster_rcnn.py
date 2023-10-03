@@ -119,8 +119,8 @@ test_evaluator = val_evaluator
 
 visualizer = dict(vis_backends=[
     dict(type='LocalVisBackend'),
-    dict(type='TensorboardVisBackend'),
-    dict(type='WandbVisBackend'),
+    # dict(type='TensorboardVisBackend'),
+    # dict(type='WandbVisBackend'),
 ])
 
 work_dir = "human_detector_wd"

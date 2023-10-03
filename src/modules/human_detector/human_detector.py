@@ -25,6 +25,7 @@ class HumanDetector:
         self.device = device
         self.working_directory = working_directory
         self.log_level = log_level
+        self.load_from_checkpoint = False
 
     def update_config(self):
         self.config = Config.fromfile(self.config_path)
