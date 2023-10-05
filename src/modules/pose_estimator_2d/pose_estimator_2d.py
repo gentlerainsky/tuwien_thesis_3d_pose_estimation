@@ -79,8 +79,11 @@ class PoseEstimator2D:
         # self.config.val_evaluator.ann_file = 'annotations/person_keypoints_val.json'
         # self.config.test_evaluator.ann_file = 'annotations/person_keypoints_test.json'
         self.runner = Runner.from_cfg(self.config)
+        if self.load_from_checkpoint:
+            self.runner.load_or_resume()
         self.model = self.runner.model
         self.model.cfg = self.runner.cfg
+        self.model.dataset_meta = dict(classes = None, palette = None, flip_indices=[0, 2, 1, 4, 3, 6, 5, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15])
 
     def load_pretrained(self):
         self.load_from_checkpoint = True
@@ -99,6 +102,7 @@ class PoseEstimator2D:
         self.runner.test()
 
     def inference(self, img_path, bboxes, bbox_format):
+        self.model.eval()
         img = mmcv.imread(img_path)
         result = inference_topdown(
             self.model,

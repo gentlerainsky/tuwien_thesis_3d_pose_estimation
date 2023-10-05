@@ -25,8 +25,8 @@ def generate_connection_line(vals):
         (7, 9, L, 'left_elbow_left_wrist'), # left elbow & wrist
         (8, 10, R, 'right_elbow_right_wrist'), # right elbow & wrist
         (11, 12, C, 'left_hip_right_hip'), # left & right hip
-        (11, 13, L, 'left_hip_left_knee'), # left hip & knee
-        (12, 14, R, 'right_hip_right_knee'), # right hip & knee
+        # (11, 13, L, 'left_hip_left_knee'), # left hip & knee
+        # (12, 14, R, 'right_hip_right_knee'), # right hip & knee
         # (13, 15, L, 'left_knee_left_ankle'), # left knee & ankle
         # (14, 16, R, 'right_knee_right_ankle') # right knee & ankle
     ]
