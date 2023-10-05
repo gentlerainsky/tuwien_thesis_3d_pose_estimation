@@ -72,9 +72,11 @@ class HumanDetector:
     
     def get_bbox(self, img_path):
         result = self.inference(img_path)
+        mask = (result.pred_instances['labels'] == 0) & (result.pred_instances['scores'] > 0.7)
+        bboxes = result.pred_instances['bboxes'][mask]
         return {
-            'bboxes': result.pred_instances['bboxes'],
-            'scores': result.pred_instances['scores']
+            'bboxes': bboxes,
+            'scores': result.pred_instances['scores'][mask]
         }
 
     def visualise(self, img_path):
