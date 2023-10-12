@@ -198,7 +198,7 @@ class Emotion3DPreprocessor:
                 "keypoints3D": self.calc_keypoints3D(humans["keypoints3D"]),
                 "image_id": img_id,
                 "bbox": self.calc_bbox(humans["full_body_bbox"]),
-                "category_id": 1,  # What is this?
+                "category_id": 1,
                 "id": nr,
             }
             skeleton_annotation.append(temp_skeleton_annotation)

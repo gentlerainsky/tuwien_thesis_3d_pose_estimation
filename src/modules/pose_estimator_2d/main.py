@@ -21,22 +21,32 @@ import numpy as np
 #     human_detector.finetune()
 
 
-def infer_2d_pose_estimation():
+def infer_2d_pose_estimation(
+    dataset_root_path = f'/root/data/processed/synthetic_cabin_bw',
+    config_path='src/modules/pose_estimator_2d/config/hrnet.py',
+    pretrained_path='https://download.openmmlab.com/mmpose/v1' \
+        '/body_2d_keypoint/topdown_heatmap/coco'\
+            '/td-hm_hrnet-w32_8xb64-210e_coco-256x192-81c58e40_20220909.pth',
+    # checkpoint_path="mmengine_workdir/pose_estimator_2d/best_coco_AP_epoch_0.pth",
+    checkpoint_path="mmengine_workdir/pose_estimator_2d/best_coco_AP_epoch_9.pth",
+    # data_root_path='/root/data/processed/synthetic_cabin_bw/A_Pillar_Codriver/',
+    device='cuda:0',
+    working_directory='mmengine_workdir/pose_estimator_2d',
+    log_level='INFO'
+):
     pose_estimator_2d = PoseEstimator2D(
-        config_path='src/modules/pose_estimator_2d/config/hrnet.py',
-        pretrained_path='https://download.openmmlab.com/mmpose/v1' \
-            '/body_2d_keypoint/topdown_heatmap/coco'\
-                '/td-hm_hrnet-w32_8xb64-210e_coco-256x192-81c58e40_20220909.pth',
+        config_path=config_path,
+        pretrained_path=pretrained_path,
         # checkpoint_path="mmengine_workdir/pose_estimator_2d/best_coco_AP_epoch_0.pth",
-        checkpoint_path="mmengine_workdir/pose_estimator_2d/best_coco_AP_epoch_9.pth",
-        data_root_path='/root/data/processed/synthetic_cabin_bw/A_Pillar_Codriver/',
-        device='cuda:0',
-        working_directory='mmengine_workdir/pose_estimator_2d',
-        log_level='INFO'
+        checkpoint_path=checkpoint_path,
+        data_root_path=dataset_root_path,
+        device=device,
+        working_directory=working_directory,
+        log_level=log_level
     )
 
     pose_estimator_2d.load_pretrained()
-    dataset_root = pathlib.Path(f'/root/data/processed/synthetic_cabin_bw')
+    dataset_root = pathlib.Path(dataset_root_path)
     camera_positions = list(dataset_root.iterdir())
     image_sets = ['train', 'val', 'test']
     for camera_position_folder in camera_positions[2:]:

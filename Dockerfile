@@ -1,4 +1,5 @@
 FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-devel
+# FROM pytorch/pytorch:2.1.0-cuda12.1-cudnn8-devel
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
