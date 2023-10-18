@@ -1,10 +1,12 @@
 from mmengine.config import Config
 from mmengine.runner import Runner
 from mmdet.apis import inference_detector, init_detector
-from mmdet.registry import VISUALIZERS
+# from mmdet.registry import VISUALIZERS
+from mmengine.visualization import Visualizer
 import mmcv
 import matplotlib.pyplot as plt
 import os
+import torch
 
 
 class HumanDetector:
@@ -72,25 +74,51 @@ class HumanDetector:
     
     def get_bbox(self, img_path):
         result = self.inference(img_path)
-        mask = (result.pred_instances['labels'] == 0) & (result.pred_instances['scores'] > 0.7)
-        bboxes = result.pred_instances['bboxes'][mask]
+        pred = result.pred_instances
+        # mask = (result.pred_instances['labels'] == 0) & (result.pred_instances['scores'] > 0.7)
+        # human_mask = (pred['labels'] == 0).to(torch.long) 
+        # index = pred['scores'][human_mask].argmax()
+        # if pred['scores'][index] < 0.5:
+        #     print(f'{img_path} has mask with {pred["scores"][index]}')
+        # index = index.unsqueeze(0)
+        # bboxes = pred['bboxes'][index]
+
+        human_mask = (pred['labels'] == 0)
+        bboxes = pred['bboxes'][human_mask]
+        scores = pred['scores'][human_mask]
+        if pred['scores'][human_mask].shape[0] > 0:
+            index = pred['scores'][human_mask].argmax()
+            if pred['scores'][human_mask][index] < 0.5:
+                print(f'{img_path} has mask with {pred["scores"][human_mask][index]}')
+            index = index.unsqueeze(0)
+            bboxes = pred['bboxes'][human_mask][index]
+            scores = pred['scores'][human_mask][index]
         return {
             'bboxes': bboxes,
-            'scores': result.pred_instances['scores'][mask]
+            'scores': scores,
         }
 
-    def visualise(self, img_path):
+    def visualise(self, img_path, bbox):
         img = mmcv.imread(img_path)
         img = mmcv.imconvert(img, 'bgr', 'rgb')
-        result = self.inference(img_path)
-        visualizer = VISUALIZERS.build(self.runner.cfg.visualizer)
-        visualizer.add_datasample(
-            'result',
-            img,
-            data_sample=result,
-            draw_gt=False,
-            show=True)
-        # img = mpimg.imread('your_image.png')
+        if bbox is None:
+            result = self.get_bbox(img_path)
+            bbox = result['bboxes']
+        # visualizer = VISUALIZERS.build(self.runner.cfg.visualizer)
+        # visualizer.add_datasample(
+        #     'result',
+        #     img,
+        #     data_sample=result,
+        #     draw_gt=False,
+        #     show=True)
+        # # img = mpimg.imread('your_image.png')
+        # imgplot = plt.imshow(visualizer.get_image())
+        # plt.show()
+        visualizer = Visualizer(image=img)
+        # single bbox formatted as [xyxy]
+        visualizer.draw_bboxes(bbox)
+        # draw multiple bboxes
+        # visualizer.show()
         imgplot = plt.imshow(visualizer.get_image())
         plt.show()
 

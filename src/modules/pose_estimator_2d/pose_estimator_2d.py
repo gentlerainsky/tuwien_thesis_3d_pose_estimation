@@ -103,10 +103,10 @@ class PoseEstimator2D:
 
     def inference(self, img_path, bboxes, bbox_format):
         self.model.eval()
-        img = mmcv.imread(img_path)
         result = inference_topdown(
             self.model,
-            img,
+            img=img_path,
+            # img,
             bboxes=bboxes,
             bbox_format=bbox_format)
         return result

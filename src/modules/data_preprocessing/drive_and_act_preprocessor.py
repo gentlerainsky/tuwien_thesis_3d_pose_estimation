@@ -5,6 +5,8 @@ from pathlib import Path
 import cv2
 import copy
 import pandas as pd
+import numpy as np
+import time
 
 
 annotation_template = {
@@ -180,23 +182,23 @@ class DriveAndActPreprocessor:
         with (self.destination_annotation_folder / 'person_keypoints_train.json').open('w') as outfile:
             train_info['images'] = self.train_image_annotations
             train_info['annotations'] = self.train_keypoint_annotations
-            json.dump(train_info, outfile)
+            json.dump(train_info, outfile, indent=4)
 
         with (self.destination_annotation_folder / 'person_keypoints_val.json').open('w') as outfile:
             val_info['images'] = self.val_image_annotations
             val_info['annotations'] = self.val_keypoint_annotations
-            json.dump(val_info, outfile)
+            json.dump(val_info, outfile, indent=4)
         
         with (self.destination_annotation_folder / 'person_keypoints_test.json').open('w') as outfile:
             test_info['images'] = self.test_image_annotations
             test_info['annotations'] = self.test_keypoint_annotations
-            json.dump(test_info, outfile)
+            json.dump(test_info, outfile, indent=4)
 
     def extract_all(self):
         actors = [item for item in self.video_root.iterdir() if item.is_dir()]
         for actor in actors:
             self.extract_frame_by_actor(actor.name)
-            break
+            # break
         self.write_annotation_file()
 
     def extract_frame_by_actor(self, actor):
@@ -206,6 +208,8 @@ class DriveAndActPreprocessor:
         annotation_folders = self.source_annotation_3d_root / actor
         annotation_files = [file for file in annotation_folders.iterdir() if file.name.split('.')[-1] == 'csv']
         for video_file in video_files:
+            print(f'start processing {video_file.as_posix()}.')
+            start_time = time.time() 
             file_prefix = video_file.name.split('.')[:-1]
             image_prefix = '_'.join(file_prefix)
             match_annotation_files = [
@@ -222,7 +226,10 @@ class DriveAndActPreprocessor:
                     match_annotation_files[0],
                     # match_camera_parameter_files[0]
                 )
-            break
+            # break
+            end_time = time.time()
+            time_spent = end_time - start_time
+            print(f'finish processing {video_file.as_posix()}. Using {time_spent} seconds')
 
     def create_final_image_annotations(self, frame_id, filename):
         image_annotation = {
@@ -282,12 +289,16 @@ class DriveAndActPreprocessor:
         #         prev_name = name
         cap = cv2.VideoCapture(video_file.as_posix())
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        print(f'total_frames = {total_frames}')
         destination_image_folder_path = self.get_image_folder_path(actor)
-        frame_rate = int(cap.get(cv2.CAP_PROP_FPS))
-        print('frame_rate', frame_rate)
-        for frame_number in range(0, total_frames, frame_rate):
+        sampling_rate = self.sampling_rate
+        if 0 < sampling_rate < 1:
+            frame_rate = int(cap.get(cv2.CAP_PROP_FPS))
+            sampling_rate = int(sampling_rate * np.floor(frame_rate))
+        print(f'frame_rate = {sampling_rate}')
+        for frame_number in range(0, total_frames, sampling_rate):
             # avoid frames with no actor
-            if not annotation_df.iloc[frame_number].is_valid:
+            if not (frame_number < annotation_df.shape[0] and annotation_df.iloc[frame_number].is_valid):
                 continue
             
             pose_3d = pd.DataFrame(
@@ -299,7 +310,7 @@ class DriveAndActPreprocessor:
 
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
             _, image = cap.read()
-            image_file_name = f'{image_prefix}_frame_{frame_number}.jpg'
+            image_file_name = f'{self.frame_id}.jpg'
             image_path = destination_image_folder_path / image_file_name
             image_annotation = self.create_final_image_annotations(self.frame_id, image_file_name)
             image_annotations.append(image_annotation)

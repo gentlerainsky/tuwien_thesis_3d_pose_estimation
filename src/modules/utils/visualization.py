@@ -3,7 +3,7 @@ import numpy as np
 import plotly.express as px
 
 
-def generate_connection_line(vals):
+def generate_connection_line(vals, valid_keypoints=None):
     L = 0
     C = 1
     R = 2
@@ -34,6 +34,8 @@ def generate_connection_line(vals):
 
     connection_count = 0
     for i, connection in enumerate(connections):
+        if (valid_keypoints is not None) and ((connection[0] not in valid_keypoints) or (connection[1] not in valid_keypoints)):
+            continue
         x, y, z = [np.array([vals[connection[0], j], vals[connection[1], j]]) for j in range(3)]
         for px, py, pz in zip(x, y, z):
             connection_lines.append({

@@ -6,10 +6,10 @@ import numpy as np
 
 
 class LitSimpleBaselineLinear(pl.LightningModule):
-    def __init__(self, exclude_ankle=False, learning_rate=1e-3):
+    def __init__(self, exclude_ankle=False, learning_rate=1e-3, exclude_hip=False):
         super().__init__()
         self.save_hyperparameters()
-        self.model = BaselineModel(exclude_ankle=exclude_ankle)
+        self.model = BaselineModel(exclude_ankle=exclude_ankle, exclude_hip=exclude_hip)
         self.learning_rate = learning_rate
         self.val_loss_log = []
         self.val_print_count = 0
@@ -22,29 +22,34 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         return y_hat
 
     def training_step(self, batch, batch_idx):
-        x, y = batch
+        x, y, valid = batch
         x = torch.flatten(x, start_dim=1).float().to(self.device)
         y = torch.flatten(y, start_dim=1).float().to(self.device)
         y_hat = self.model(x)
-        loss = F.mse_loss(y_hat, y)
+        # print(y_hat[valid].shape, y[valid].shape)
+        loss = F.mse_loss(y_hat.reshape(y_hat.shape[0], -1, 3)[valid], y.reshape(y.shape[0], -1, 3)[valid])
         self.train_loss_log.append(torch.sqrt(loss).item())
         return loss
 
     def validation_step(self, batch, batch_idx):
-        x, y = batch
+        x, y, valid = batch
         x = torch.flatten(x, start_dim=1).float().to(self.device)
         y = torch.flatten(y, start_dim=1).float().to(self.device)
         y_hat = self.model(x)
-        loss = F.mse_loss(y_hat, y)
+        # print('y_hat.shape', y_hat.shape)
+        # print('y.shape', y.shape)
+        # print('valid.shape', valid.shape)
+        # print(y_hat.reshape(y_hat.shape[0], -1, 3)[valid].shape, y.reshape(y.shape[0], -1, 3)[valid].shape)
+        loss = F.mse_loss(y_hat.reshape(y_hat.shape[0], -1, 3)[valid], y.reshape(y.shape[0], -1, 3)[valid])
         self.val_loss_log.append(torch.sqrt(loss).item())
         return loss
 
     def test_step(self, batch, batch_idx):
-        x, y = batch
+        x, y, valid = batch
         x = torch.flatten(x, start_dim=1).float().to(self.device)
         y = torch.flatten(y, start_dim=1).to(self.device)
         y_hat = self.model(x)
-        loss = F.mse_loss(y_hat, y)
+        loss = F.mse_loss(y_hat.reshape(y_hat.shape[0], -1, 3)[valid], y.reshape(y.shape[0], -1, 3)[valid])
         self.test_loss_log.append(torch.sqrt(loss).item())
         return loss
 

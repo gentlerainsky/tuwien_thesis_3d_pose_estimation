@@ -68,19 +68,20 @@ class Linear(nn.Module):
 
 
 class BaselineModel(nn.Module):
-    def __init__(self, linear_size=1024, num_stages=2, p_dropout=0.5, exclude_ankle=False):
+    def __init__(self, linear_size=1024, num_stages=2, p_dropout=0.5, exclude_ankle=False, exclude_hip=False):
         """
 
         Args:
             linear_size (int, optional): Number of nodes in the linear layers. Defaults to 1024.
             num_stages (int, optional): Number to repeat the linear block. Defaults to 2.
             p_dropout (float, optional): Dropout probability. Defaults to 0.5.
-            predict_14 (bool, optional): Whether to predict 14 3d-joints. Defaults to False.
         """
         super(BaselineModel, self).__init__()
         num_keypoints = 17
         if exclude_ankle:
             num_keypoints = 15
+        if exclude_hip:
+            num_keypoints = 13
         # input_size = 16 * 2  # Input 2d-joints.
         input_size = num_keypoints * 2
         # output_size = 14 * 3 if predict_14 else 16 * 3  # Output 3d-joints.
@@ -109,9 +110,7 @@ class BaselineModel(nn.Module):
         Returns:
             y (torch.Tensor): Output tensor.
         """
-        # print(f'input x.shape = {x.shape}')
         y = self.w1(x)
-        # print(f'outer x2.shape = {y.shape}')
         y = self.bn1(y)
         y = self.relu(y)
         y = self.dropout(y)
