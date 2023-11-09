@@ -48,8 +48,11 @@ class LitRepNet(pl.LightningModule):
         self.discriminator = DiscriminatorModel(input_size=self.input_dim * 3)
         self.val_loss_log = []
         self.val_print_count = 0
-        self.train_g_loss_log = []
-        self.train_d_loss_log = []
+        self.total_g_loss_log = []
+        self.g_loss_log = []
+        self.pose_2d_loss_log = []
+        self.c_loss_log = []
+        self.d_loss_log = []
         self.test_loss_log = []
 
 
@@ -90,12 +93,6 @@ class LitRepNet(pl.LightningModule):
         for i in range(1):
             # generate images
             camera_out, gen_pose_3d, reprojected_2d = self.generator(input_2d)
-
-            # log sampled images
-            # sample_imgs = self.generated_imgs[:6]
-            # grid = torchvision.utils.make_grid(sample_imgs)
-            # self.logger.experiment.add_image('generated_images', grid, 0)
-
             # ground truth result (ie: all fake)
             # put on GPU because we created this tensor inside training_loop
             valid = torch.ones(input_2d.size(0), 1)
@@ -105,21 +102,11 @@ class LitRepNet(pl.LightningModule):
             c_loss = camera_loss(camera_out)
             pose_2d_loss = weighted_pose_2d_loss(input_2d, reprojected_2d, self.num_keypoints)
             total_g_loss = g_loss + c_loss + pose_2d_loss
-            # tqdm_dict = {
-            #     'g_loss': loss
-            # }
-            # output = OrderedDict({
-            #     'loss': loss,
-            #     'progress_bar': tqdm_dict,
-            #     'log': tqdm_dict
-            # })
-            # return output
             g_opt.zero_grad()
             self.manual_backward(total_g_loss)
             g_opt.step()
         # train discriminator
         # Measure discriminator's ability to classify real from generated samples
-        # elif optimizer_idx == 1:
         for i in range(5):
             camera_out, gen_pose_3d, reprojected_2d = self.generator(input_2d)
 
@@ -131,20 +118,15 @@ class LitRepNet(pl.LightningModule):
             gradient_penalty = self.compute_gradient_penalty(real_pose_3d.data, gen_pose_3d.data)
             # Adversarial loss
             d_loss = -torch.mean(real_validity) + torch.mean(fake_validity) + lambda_gp * gradient_penalty
-
-            # tqdm_dict = {'d_loss': d_loss}
-            # output = OrderedDict({
-            #     'loss': d_loss,
-            #     'progress_bar': tqdm_dict,
-            #     'log': tqdm_dict
-            # })
-            # return output
             d_opt.zero_grad()
             self.manual_backward(d_loss)
             d_opt.step()
         self.log_dict({"g_loss": total_g_loss, "d_loss": d_loss}, prog_bar=True)
-        self.train_g_loss_log.append(total_g_loss.item())
-        self.train_d_loss_log.append(d_loss.item())
+        self.total_g_loss_log.append(total_g_loss.item())
+        self.g_loss_log.append(g_loss.item())
+        self.pose_2d_loss_log.append(pose_2d_loss.item())
+        self.c_loss_log.append(c_loss.item())
+        self.d_loss_log.append(d_loss.item())
 
 
     def validation_step(self, batch, batch_idx):
@@ -152,27 +134,28 @@ class LitRepNet(pl.LightningModule):
         x = torch.flatten(x, start_dim=1).float().to(self.device)
         y = torch.flatten(y, start_dim=1).float().to(self.device)
         y_hat = self.generator.lifter2D_3D(x)
-        # print('y_hat.shape', y_hat.shape)
-        # print('y.shape', y.shape)
-        # print('valid.shape', valid.shape)
-        # print(y_hat.reshape(y_hat.shape[0], -1, 3)[valid].shape, y.reshape(y.shape[0], -1, 3)[valid].shape)
         loss = F.mse_loss(y_hat.reshape(y_hat.shape[0], -1, 3)[valid], y.reshape(y.shape[0], -1, 3)[valid])
-        # self.val_loss_log.append(torch.sqrt(loss).item())
         self.log("val_loss", loss.item())
         self.val_loss_log.append(torch.sqrt(loss).item())
         return loss
 
     def on_validation_epoch_end(self):
         print(f'check #{self.val_print_count}')
-        if len(self.train_g_loss_log) > 0:
-            print(f'training loss from {len(self.train_g_loss_log)} ' +
-                  f'batches: g_loss = {np.mean(self.train_g_loss_log)} ' +
-                  f'd_loss = {np.mean(self.train_d_loss_log)}')
+        if len(self.total_g_loss_log) > 0:
+            print(f'training loss from {len(self.g_loss_log)} ' +
+                  f'batches:\nd_loss = {np.mean(self.d_loss_log)}\n' +
+                  f'g_loss = {np.mean(self.g_loss_log)}\n' +
+                  f'c_loss = {np.mean(self.c_loss_log)}\n' +
+                  f'pose_2d_loss = {np.mean(self.pose_2d_loss_log)}\n' +
+                  f'total_g_loss = {np.mean(self.total_g_loss_log)}')
         val_loss = np.mean(self.val_loss_log)
         print(f"val loss from: {len(self.val_loss_log)} batches : {val_loss * 1000}")
         self.log("val_loss", val_loss.item())
-        self.train_g_loss_log = []
-        self.train_d_loss_log = []
+        self.total_g_loss_log = []
+        self.g_loss_log = []
+        self.pose_2d_loss_log = []
+        self.c_loss_log = []
+        self.d_loss_log = []
         self.val_print_count += 1
         self.val_loss_log = []
 

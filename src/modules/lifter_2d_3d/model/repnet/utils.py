@@ -25,11 +25,14 @@ def weighted_pose_2d_loss(y_true, y_pred, num_keypoint):
     device = y_pred.get_device()
     if device == -1:
         device = torch.device('cpu')
-    diff = torch.abs(y_true - y_pred).float()
+    # diff = torch.abs(y_true - y_pred).float()
+    diff = torch.pow(y_true - y_pred, 2).float()
     # weighting the joints
     weights_t = torch.tensor(
-        # np.array([1, 1, 1, 1, 1, 1, 0, 1, 0.1, 0.1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0.1, 0.1, 1, 1, 1, 1, 1, 1])
-        np.ones(num_keypoint * 2)
+        np.array([
+            2, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+            2, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1]) * 0.5
+        # np.ones(num_keypoint * 2)
     ).float().to(device)
     weights = torch.tile(weights_t.reshape([1, num_keypoint * 2]), [y_pred.shape[0], 1])
     tmp = weights * diff

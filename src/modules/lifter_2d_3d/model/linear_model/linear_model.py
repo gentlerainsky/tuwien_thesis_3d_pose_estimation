@@ -36,7 +36,7 @@ class Linear(nn.Module):
         """
         super(Linear, self).__init__()
 
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.LeakyReLU(inplace=True)
         self.dropout = nn.Dropout(p_dropout)
 
         self.w1 = nn.Linear(linear_size, linear_size)
@@ -95,7 +95,7 @@ class BaselineModel(nn.Module):
 
         self.w2 = nn.Linear(linear_size, self.output_size)
 
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.LeakyReLU(inplace=True)
         self.dropout = nn.Dropout(p_dropout)
 
         # initialize model weights
