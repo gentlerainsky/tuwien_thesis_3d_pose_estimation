@@ -22,7 +22,7 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         return y_hat
 
     def training_step(self, batch, batch_idx):
-        x, y, valid = batch
+        img_id, x, y, valid = batch
         x = torch.flatten(x, start_dim=1).float().to(self.device)
         y = torch.flatten(y, start_dim=1).float().to(self.device)
         y_hat = self.model(x)
@@ -32,7 +32,7 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        x, y, valid = batch
+        img_id, x, y, valid = batch
         x = torch.flatten(x, start_dim=1).float().to(self.device)
         y = torch.flatten(y, start_dim=1).float().to(self.device)
         y_hat = self.model(x)
@@ -45,7 +45,7 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         return loss
 
     def test_step(self, batch, batch_idx):
-        x, y, valid = batch
+        img_id, x, y, valid = batch
         x = torch.flatten(x, start_dim=1).float().to(self.device)
         y = torch.flatten(y, start_dim=1).to(self.device)
         y_hat = self.model(x)

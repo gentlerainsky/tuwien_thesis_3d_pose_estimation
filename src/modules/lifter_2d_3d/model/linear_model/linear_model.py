@@ -83,17 +83,17 @@ class BaselineModel(nn.Module):
         if exclude_hip:
             num_keypoints = 13
         # input_size = 16 * 2  # Input 2d-joints.
-        input_size = num_keypoints * 2
+        self.input_size = num_keypoints * 2
         # output_size = 14 * 3 if predict_14 else 16 * 3  # Output 3d-joints.
-        output_size = num_keypoints * 3
+        self.output_size = num_keypoints * 3
 
-        self.w1 = nn.Linear(input_size, linear_size)
+        self.w1 = nn.Linear(self.input_size, linear_size)
         self.bn1 = nn.BatchNorm1d(linear_size)
 
         self.linear_stages = [Linear(linear_size, p_dropout) for _ in range(num_stages)]
         self.linear_stages = nn.ModuleList(self.linear_stages)
 
-        self.w2 = nn.Linear(linear_size, output_size)
+        self.w2 = nn.Linear(linear_size, self.output_size)
 
         self.relu = nn.ReLU(inplace=True)
         self.dropout = nn.Dropout(p_dropout)

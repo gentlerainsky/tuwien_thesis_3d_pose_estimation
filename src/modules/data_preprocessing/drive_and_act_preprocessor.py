@@ -133,6 +133,7 @@ class DriveAndActPreprocessor:
             val_image_folder,
             test_image_folder,
             destination_annotation_folder,
+            train_subset,
             val_subset,
             test_subset,
             start_frame_id=0,
@@ -154,8 +155,10 @@ class DriveAndActPreprocessor:
         self.test_keypoint_annotations = []
         self.sampling_rate = sampling_rate
         self.destination_annotation_folder = self.destination_root / destination_annotation_folder
+        self.train_subset = train_subset
         self.val_subset = val_subset
         self.test_subset = test_subset
+        self.union_subset = train_subset + val_subset + test_subset
         self.destination_height = 1024
         self.destination_width = 1280
         self.frame_id = start_frame_id
@@ -195,7 +198,8 @@ class DriveAndActPreprocessor:
             json.dump(test_info, outfile, indent=4)
 
     def extract_all(self):
-        actors = [item for item in self.video_root.iterdir() if item.is_dir()]
+        actors = [item for item in self.video_root.iterdir() if (item.is_dir() and (item.name in self.union_subset))]
+        print(f'extracting\n{[actor.name for actor in actors]}')
         for actor in actors:
             self.extract_frame_by_actor(actor.name)
             # break

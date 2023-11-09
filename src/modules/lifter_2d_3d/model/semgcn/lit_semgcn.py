@@ -93,7 +93,7 @@ class LitSemGCN(pl.LightningModule):
         return y_hat
 
     def training_step(self, batch, batch_idx):
-        x, y = batch
+        img_id, x, y = batch
         x = x.float().squeeze(2).to(self.device)
         y = y.float().squeeze(2).to(self.device)
         y_hat = self.model(x)
@@ -102,7 +102,7 @@ class LitSemGCN(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        x, y = batch
+        img_id, x, y = batch
         x = x.float().squeeze(2).to(self.device)
         y = y.float().squeeze(2).to(self.device)
         y_hat = self.model(x)
@@ -111,7 +111,7 @@ class LitSemGCN(pl.LightningModule):
         return loss
 
     def test_step(self, batch, batch_idx):
-        x, y = batch
+        img_id, x, y = batch
         x = x.float().squeeze(2).to(self.device)
         y = y.float().squeeze(2).to(self.device)
         y_hat = self.model(x)

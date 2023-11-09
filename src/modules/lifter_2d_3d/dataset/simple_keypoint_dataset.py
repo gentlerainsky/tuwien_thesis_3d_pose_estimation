@@ -58,6 +58,7 @@ class SimpleKeypointDataset():
                     keypoints3D = keypoints3D[:-2, :]
                 valid_keypoints = (keypoints3D.sum(axis=1) != 0)
                 samples.append({
+                    'id': annotation['id'],
                     'filenames': data['images'][idx]['file_name'],
                     'keypoints2D': keypoints2D,
                     'keypoints3D': keypoints3D,
@@ -70,6 +71,6 @@ class SimpleKeypointDataset():
 
     def __getitem__(self, idx):
         sample = self.samples[idx]
-        return sample['keypoints2D'][:, :2], sample['keypoints3D'], sample['valid']
+        return sample['id'], sample['keypoints2D'][:, :2], sample['keypoints3D'], sample['valid']
         # return sample
 
