@@ -30,8 +30,8 @@ def weighted_pose_2d_loss(y_true, y_pred, num_keypoint):
     # weighting the joints
     weights_t = torch.tensor(
         np.array([
-            2, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
-            2, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1]) * 0.5
+            2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1,
+            2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1]) * 0.5
         # np.ones(num_keypoint * 2)
     ).float().to(device)
     weights = torch.tile(weights_t.reshape([1, num_keypoint * 2]), [y_pred.shape[0], 1])

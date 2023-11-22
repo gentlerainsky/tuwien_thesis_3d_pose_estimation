@@ -107,7 +107,7 @@ class LitRepNet(pl.LightningModule):
             g_opt.step()
         # train discriminator
         # Measure discriminator's ability to classify real from generated samples
-        for i in range(5):
+        for i in range(10):
             camera_out, gen_pose_3d, reprojected_2d = self.generator(input_2d)
 
             # Real images

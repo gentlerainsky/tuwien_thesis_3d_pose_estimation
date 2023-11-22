@@ -10,7 +10,7 @@ import os
 import numpy as np
 from mmengine.structures import InstanceData
 from mmpose.structures import PoseDataSample
-
+from pathlib import Path
 
 class PoseEstimator2D:
     def __init__(
@@ -21,63 +21,70 @@ class PoseEstimator2D:
         data_root_path,
         device='cpu',
         working_directory='./pose_estimator_2d_wd',
-        log_level='INFO'
+        log_level='INFO',
+        use_groundtruth_bbox=False
     ):
         self.config_path = config_path
         self.pretrained_path = pretrained_path
         self.checkpoint_path = checkpoint_path
-        self.data_root = data_root_path
+        self.data_root = Path(data_root_path)
         self.device = device
         self.load_from_checkpoint = False
         self.working_directory = working_directory
         self.log_level = log_level
-        # self.update_config()
+        self.use_groundtruth_bbox = use_groundtruth_bbox
 
     def update_config(self):
         self.config = Config.fromfile(self.config_path)
-        self.config.data_root = self.data_root
+        self.config.data_root = self.data_root.as_posix()
         if self.load_from_checkpoint:
             self.config.load_from = self.checkpoint_path
         else:
             self.config.load_from = self.pretrained_path
         self.config.work_dir = self.working_directory
         self.config.log_level = self.log_level
+
+        # Training
         self.config.train_cfg['by_epoch'] = True
         # self.config.train_cfg['max_iters'] = 1000
         self.config.train_cfg['val_interval'] = 1
         self.config.train_cfg['max_epochs'] = 10
-
-        self.config.train_dataloader['dataset']['data_root'] = self.data_root
-        self.config.train_dataloader['dataset']['ann_file'] = os.path.join(
-            self.config.data_root, 'annotations/person_keypoints_train.json')
-        # self.config.train_dataloader['dataset']['ann_file'] = 'annotations/person_keypoints_train.json'
-        self.config.val_dataloader['dataset']['bbox_file'] = os.path.join(
-            self.config.data_root, 'person_detection_results/human_detection_train.json')
+        self.config.train_dataloader['dataset']['data_root'] = self.config.data_root
+        self.config.train_dataloader['dataset']['ann_file'] = 'annotations/person_keypoints_train.json'
+        # if self.use_groundtruth_bbox:
+        #     self.config.train_dataloader['dataset']['bbox_file'] = \
+        #         'person_detection_results/ground_truth_human_detection_train.json'
+        # else:
+        #     self.config.train_dataloader['dataset']['bbox_file'] = \
+        #         'person_detection_results/human_detection_train.json'
         self.config.train_dataloader['dataset']['data_prefix']['img'] = 'images/train'
 
+        # Validation
         self.config.val_dataloader['dataset']['data_root'] = self.config.data_root
-        self.config.val_dataloader['dataset']['ann_file'] = os.path.join(
-            self.config.data_root, 'annotations/person_keypoints_val.json')
-        # self.config.val_dataloader['dataset']['bbox_file'] = os.path.join(
-        #   self.config.data_root, 'person_detection_results/ground_truth_human_detection_val.json')
-        self.config.val_dataloader['dataset']['bbox_file'] = os.path.join(
-            self.config.data_root, 'person_detection_results/human_detection_val.json')
-        # self.config.val_dataloader['dataset']['ann_file'] = 'annotations/person_keypoints_val.json'
-        # self.config.val_dataloader['dataset']['bbox_file'] = 'person_detection_results/ground_truth_val.json'
-        self.config.val_dataloader['dataset']['data_prefix']['img'] = 'images/val'
+        self.config.val_dataloader['dataset']['ann_file'] = 'annotations/person_keypoints_val.json'
+        if self.use_groundtruth_bbox:
+            self.config.val_dataloader['dataset']['bbox_file'] = os.path.join(
+                self.config.data_root, 'person_detection_results/ground_truth_human_detection_val.json')
+        else:
+            self.config.val_dataloader['dataset']['bbox_file'] = os.path.join(
+                self.config.data_root, 'person_detection_results/human_detection_val.json')
 
+        self.config.val_dataloader['dataset']['data_prefix']['img'] = 'images/val'
+        self.config.val_evaluator.ann_file = (self.data_root / 'annotations/person_keypoints_val.json').as_posix()
+
+        # Testing
         self.config.test_dataloader['dataset']['data_root'] = self.config.data_root
-        self.config.test_dataloader['dataset']['ann_file'] = os.path.join(
-            self.config.data_root, 'annotations/person_keypoints_test.json')
-        # self.config.test_dataloader['dataset']['ann_file'] = 'annotations/person_keypoints_test.json'
-        self.config.test_dataloader['dataset']['bbox_file'] = os.path.join(
-            self.config.data_root, 'person_detection_results/ground_truth_human_detection_test.json')
-        # self.config.test_dataloader['dataset']['bbox_file'] = 'person_detection_results/ground_truth_test.json'
+        self.config.test_dataloader['dataset']['ann_file'] = 'annotations/person_keypoints_test.json'
+        if self.use_groundtruth_bbox:
+            self.config.test_dataloader['dataset']['bbox_file'] = os.path.join(
+                self.config.data_root, 'person_detection_results/ground_truth_human_detection_test.json')
+        else:    
+            self.config.test_dataloader['dataset']['bbox_file'] = os.path.join(
+                self.config.data_root, 'person_detection_results/human_detection_test.json')
+
         self.config.test_dataloader['dataset']['data_prefix']['img'] = 'images/test'
-        self.config.val_evaluator.ann_file = os.path.join(self.config.data_root, 'annotations/person_keypoints_val.json')
-        self.config.test_evaluator.ann_file = os.path.join(self.config.data_root, 'annotations/person_keypoints_test.json')
-        # self.config.val_evaluator.ann_file = 'annotations/person_keypoints_val.json'
-        # self.config.test_evaluator.ann_file = 'annotations/person_keypoints_test.json'
+        self.config.test_evaluator.ann_file = (self.data_root / 'annotations/person_keypoints_test.json').as_posix()
+
         self.runner = Runner.from_cfg(self.config)
         if self.load_from_checkpoint:
             self.runner.load_or_resume()
@@ -98,7 +105,6 @@ class PoseEstimator2D:
             self.checkpoint_path = filepath
 
     def test(self):
-        # self.update_config()
         self.runner.test()
 
     def inference(self, img_path, bboxes, bbox_format):
@@ -106,7 +112,6 @@ class PoseEstimator2D:
         result = inference_topdown(
             self.model,
             img=img_path,
-            # img,
             bboxes=bboxes,
             bbox_format=bbox_format)
         return result
@@ -155,9 +160,6 @@ class PoseEstimator2D:
             line_width=10,
             text_color=(255, 255, 0),
             backend='matplotlib',
-            # kpt_color=(255, 255, 0),
-            # det_kpt_color='green',
-            # link_color='green'
             link_color=[
                 (255, 0, 0),
                 (255, 128, 0),

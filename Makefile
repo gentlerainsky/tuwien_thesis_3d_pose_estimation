@@ -4,14 +4,14 @@ build:
 
 shell:
 	# docker run --shm-size 16G --gpus all -it -p 8888:8888 -v ~/Documents/Projects/data:/workspace/data -v .:/workspace local/synthetic_cabin
-	docker run --shm-size 16G --gpus all -it -p 8888:8888 -p 6006:6006 -v /media/tk/data_ext:/root/synthetic_cabin_1m -v /data2:/root/data -v .:/workspace local/pose_detector_3d
+	docker run --shm-size 16G --gpus all -it -p 8888:8888 -p 6006:6006 -v /media/tk/data_ext:/root/synthetic_cabin_1m -v /data2:/root/data -v .:/workspace local/pose_detector_3d 
 	# docker run --shm-size 16G --gpus all -it -p 8888:8888 -v /data2:/root/data -v .:/workspace local/pose_detector_3d
 
 jupyter:
-	jupyter notebook --ip 0.0.0.0 --no-browser --allow-root --NotebookApp.iopub_data_rate_limit=100000 --NotebookApp.rate_limit_window 100000
+	jupyter notebook --ip 0.0.0.0 --no-browser --allow-root --NotebookApp.iopub_data_rate_limit=100000 --NotebookApp.rate_limit_window 100000 --NotebookApp.token=0
 
 jupyter-bg:
-	jupyter notebook --quiet --ip 0.0.0.0 --no-browser --allow-root --NotebookApp.iopub_data_rate_limit=100000 --NotebookApp.rate_limit_window 100000 --no-browser &
+	jupyter notebook --quiet --ip 0.0.0.0 --no-browser --allow-root --NotebookApp.iopub_data_rate_limit=100000 --NotebookApp.rate_limit_window 100000 --no-browser --NotebookApp.token=0 &
 
 tensorboard:
 	# make tensorboard LOG_DIR="mmengine_workdir/pose_estimator_2d/20230802_135548/vis_data/"

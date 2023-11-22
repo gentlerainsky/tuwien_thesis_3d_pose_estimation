@@ -90,7 +90,8 @@ class Emotion3DPreprocessor:
         destination_height,
         destination_width,
         val_subset,
-        test_subset
+        test_subset,
+        camera_positions=None
     ):
         self.source_path = Path(source_path)
         self.root_destination_path = Path(destination_path)
@@ -113,6 +114,7 @@ class Emotion3DPreprocessor:
         self.scale_factor = self.scale_height * self.scale_width
         self.val_subset = val_subset
         self.test_subset = test_subset
+        self.camera_positions = camera_positions
 
     def set_camera_position(self, camera_position):
         self.destination_path = self.root_destination_path / camera_position
@@ -283,6 +285,7 @@ class Emotion3DPreprocessor:
         # val_json = copy.deepcopy(annotation_template)
 
         files = sorted(glob.iglob(str(self.source_annotation_path) + "/*.json"))
+        print(str(self.source_annotation_path), len(files))
         for i, file_path in enumerate(files):
             f = open(file_path)
             data = json.load(f)
@@ -293,6 +296,14 @@ class Emotion3DPreprocessor:
             human_name = data["humans"][0]["name"]
 
             camera_position = data["camera_parameters"]["name"]
+            enough_train = False or (num_train == 0)
+            enough_val = False or (num_val == 0)
+            enough_test = False or (num_test == 0)
+            total_image_counter += 1
+            if total_image_counter % 10000 == 0:
+                print(total_image_counter, enough_train, num_train)
+            if (self.camera_positions is not None) and (camera_position not in self.camera_positions):
+                continue
             if camera_position not in train_info:
                 print(f'init {camera_position}')
                 train_info[camera_position] = copy.deepcopy(annotation_template)
@@ -301,9 +312,6 @@ class Emotion3DPreprocessor:
                 self.set_camera_position(camera_position)
                 self.create_folder_if_not_exist()
 
-            enough_train = False or (num_train == 0)
-            enough_val = False or (num_val == 0)
-            enough_test = False or (num_test == 0)
             if human_name in self.val_subset:
                 if (val_counter <= num_val) and num_val > 0:
                     val_info[camera_position]["images"].append(
@@ -346,9 +354,6 @@ class Emotion3DPreprocessor:
                     self.save_images(img_name, "train")
                 else:
                     enough_train = True
-            total_image_counter += 1
-            if total_image_counter % 500 == 0:
-                print(total_image_counter, enough_train, num_train)
             if enough_train and enough_val and enough_test:
                 break
         print('finish saving images')
@@ -357,28 +362,28 @@ class Emotion3DPreprocessor:
             
             # create json files for keypoints
             with (self.annotation_path / 'person_keypoints_train.json').open('w') as outfile:
-                json.dump(train_info[camera_position], outfile)
+                json.dump(train_info[camera_position], outfile, indent=2)
 
             with (self.annotation_path / 'person_keypoints_val.json').open('w') as outfile:
-                json.dump(val_info[camera_position], outfile)
+                json.dump(val_info[camera_position], outfile, indent=2)
             
             with (self.annotation_path / 'person_keypoints_test.json').open('w') as outfile:
-                json.dump(test_info[camera_position], outfile)
+                json.dump(test_info[camera_position], outfile, indent=2)
                 
             with (self.person_detection_path / 'ground_truth_human_detection_train.json').open('w') as outfile:
                 # person detection results
                 detections_json = self.person_detection(train_info[camera_position]["annotations"])
-                json.dump(detections_json, outfile)
+                json.dump(detections_json, outfile, indent=2)
             
             with (self.person_detection_path / 'ground_truth_human_detection_val.json').open('w') as outfile:
                 # person detection results
                 detections_json = self.person_detection(val_info[camera_position]["annotations"])
-                json.dump(detections_json, outfile)
+                json.dump(detections_json, outfile, indent=2)
 
             with (self.person_detection_path / 'ground_truth_human_detection_test.json').open('w') as outfile:
                 # person detection results
                 detections_json = self.person_detection(test_info[camera_position]["annotations"])
-                json.dump(detections_json, outfile)
+                json.dump(detections_json, outfile, indent=2)
 
 
             # visualize keypoints

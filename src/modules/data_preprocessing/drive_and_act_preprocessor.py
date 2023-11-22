@@ -127,6 +127,7 @@ class DriveAndActPreprocessor:
             dataset_root,
             video_root,
             source_annotation_3d_root,
+            activity_annotation_path,
             destination_root,
             image_folder,
             train_image_folder,
@@ -136,12 +137,14 @@ class DriveAndActPreprocessor:
             train_subset,
             val_subset,
             test_subset,
-            start_frame_id=0,
-            sampling_rate=5
+            start_image_id=0,
+            sampling_rate=5,
+            default_activity='sitting_still'
         ):
         self.dataset_root = Path(dataset_root)
         self.video_root = self.dataset_root / video_root
         self.source_annotation_3d_root = self.dataset_root / source_annotation_3d_root
+        self.activity_df = pd.read_csv((self.dataset_root / activity_annotation_path).as_posix())
         self.destination_root = Path(destination_root)
         self.image_folder = self.destination_root / image_folder
         self.train_image_path = self.image_folder / train_image_folder
@@ -161,7 +164,8 @@ class DriveAndActPreprocessor:
         self.union_subset = train_subset + val_subset + test_subset
         self.destination_height = 1024
         self.destination_width = 1280
-        self.frame_id = start_frame_id
+        self.image_id = start_image_id
+        self.default_activity = default_activity
         self.create_folder_if_not_exist()
 
     def create_folder_if_not_exist(self):
@@ -185,17 +189,17 @@ class DriveAndActPreprocessor:
         with (self.destination_annotation_folder / 'person_keypoints_train.json').open('w') as outfile:
             train_info['images'] = self.train_image_annotations
             train_info['annotations'] = self.train_keypoint_annotations
-            json.dump(train_info, outfile, indent=4)
+            json.dump(train_info, outfile, indent=2)
 
         with (self.destination_annotation_folder / 'person_keypoints_val.json').open('w') as outfile:
             val_info['images'] = self.val_image_annotations
             val_info['annotations'] = self.val_keypoint_annotations
-            json.dump(val_info, outfile, indent=4)
+            json.dump(val_info, outfile, indent=2)
         
         with (self.destination_annotation_folder / 'person_keypoints_test.json').open('w') as outfile:
             test_info['images'] = self.test_image_annotations
             test_info['annotations'] = self.test_keypoint_annotations
-            json.dump(test_info, outfile, indent=4)
+            json.dump(test_info, outfile, indent=2)
 
     def extract_all(self):
         actors = [item for item in self.video_root.iterdir() if (item.is_dir() and (item.name in self.union_subset))]
@@ -219,37 +223,47 @@ class DriveAndActPreprocessor:
             match_annotation_files = [
                 file for file in annotation_files if file.name.split('.')[0] == file_prefix[0]
             ]
-            # match_camera_parameter_files = [
-                # file for file in camera_parameter_files if file.name.split('.')[0] == file_prefix[0]
-            # ]
             if len(match_annotation_files) > 0:                
                 self.extract_frame_by_video(
                     actor,
                     image_prefix,
                     video_file,
                     match_annotation_files[0],
-                    # match_camera_parameter_files[0]
                 )
             # break
             end_time = time.time()
             time_spent = end_time - start_time
             print(f'finish processing {video_file.as_posix()}. Using {time_spent} seconds')
 
-    def create_final_image_annotations(self, frame_id, filename):
+    def create_final_image_annotations(self, image_id, output_filename, actor, video_file, frame_id):
+        file_id = f'{actor}/{video_file.stem}'
+        mask = (
+            (self.activity_df['file_id'] == file_id)
+            & (self.activity_df['frame_start'] <= frame_id)
+            & (self.activity_df['frame_end'] >= frame_id)
+        )
+        rows = self.activity_df[mask]
+        if rows.shape[0] > 0:
+            annotated_activity = rows.activity.iloc[0]
+        else:
+            annotated_activity = self.default_activity
         image_annotation = {
-            "license": 1,
-            "file_name": filename,
-            "coco_url": "",
+            # "license": 1,
+            "actor": actor,
+            "frame_id": frame_id,
+            "activity": annotated_activity,
+            "video_file": file_id,
+            "file_name": output_filename,
+            # "coco_url": "",
             "height": self.destination_height,
             "width": self.destination_width,
-            "data_captured": "",
-            "flickr_url": "",
-            "id": frame_id,
+            # "data_captured": "",
+            # "flickr_url": "",
+            "id": image_id,
         }
         return image_annotation
 
-
-    def create_final_skeleton_annotaions(self, frame_id, num_keypoints, keypoints3D):
+    def create_final_skeleton_annotaions(self, image_id, num_keypoints, keypoints3D):
         skeleton_annotation = {
             # "segmentation": [],
             "num_keypoints": num_keypoints,
@@ -259,11 +273,11 @@ class DriveAndActPreprocessor:
             # "keypoints": self.calc_keypoints(humans["keypoints2D"]),
             # "keypoints": [],
             "keypoints3D": keypoints3D,
-            "image_id": frame_id,
+            "image_id": image_id,
             # "bbox": self.calc_bbox(humans["full_body_bbox"]),
             # "bbox": [],
             "category_id": 1,
-            "id": frame_id,
+            "id": image_id,
         }
         return skeleton_annotation
 
@@ -276,21 +290,12 @@ class DriveAndActPreprocessor:
 
     def extract_frame_by_video(self, actor, image_prefix, video_file, annotation_file):
         annotation_df = pd.read_csv(annotation_file.as_posix())
-        # print(annotation_df.head())
         # check if the annotation exists at a particular keypoint
         # to remove unnecessary point like foot toes.
         annotation_df.insert(2, "is_valid", (annotation_df.iloc[:, 2:].sum(axis=1) > 0))
 
         image_annotations = []
         keypoint_annotations = []
-        # get annotation column name (keypoint name)
-        # l = annotation_df.columns[3:].map(lambda a: a.split('_')[0])
-        # keypoint_name = []
-        # prev_name = None
-        # for name in l:
-        #     if name != prev_name:
-        #         keypoint_name.append(name)
-        #         prev_name = name
         cap = cv2.VideoCapture(video_file.as_posix())
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         print(f'total_frames = {total_frames}')
@@ -314,15 +319,15 @@ class DriveAndActPreprocessor:
 
             cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
             _, image = cap.read()
-            image_file_name = f'{self.frame_id}.jpg'
+            image_file_name = f'{self.image_id}.jpg'
             image_path = destination_image_folder_path / image_file_name
-            image_annotation = self.create_final_image_annotations(self.frame_id, image_file_name)
+            image_annotation = self.create_final_image_annotations(self.image_id, image_file_name, actor, video_file, frame_number)
             image_annotations.append(image_annotation)
-            skeleton_annotation = self.create_final_skeleton_annotaions(self.frame_id, num_keypoints, pose_3d_array)
+            skeleton_annotation = self.create_final_skeleton_annotaions(self.image_id, num_keypoints, pose_3d_array)
             keypoint_annotations.append(skeleton_annotation)
-            self.frame_id += 1
+            self.image_id += 1
             cv2.imwrite(image_path.as_posix(), image)
-        
+            # break
         if actor in self.val_subset:
             self.val_image_annotations += image_annotations
             self.val_keypoint_annotations += keypoint_annotations

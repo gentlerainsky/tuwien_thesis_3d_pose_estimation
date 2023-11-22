@@ -106,4 +106,4 @@ class DiscriminatorModel(nn.Module):
         hidden_out = self.hidden_layer(hidden_out)
         hidden_out = F.leaky_relu(hidden_out)
         out = self.predict_layer(hidden_out)
-        return out
+        return F.sigmoid(out)
