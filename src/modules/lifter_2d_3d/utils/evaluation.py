@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+from src.modules.data_preprocessing.definition import coco_keypoint_names
 
 
 class Evaluator:
@@ -46,8 +48,13 @@ class Evaluator:
                 self.activities_mpjpe[activity] += activities_mpjpe
 
     def get_result(self):
-        pjpe = np.array(self.pjpe).mean(axis=0) * 1000
         mpjpe = np.nanmean(np.array(self.mpjpe)) * 1000
+        pjpe_data = np.array(self.pjpe).mean(axis=0) * 1000
+        pjpe = pd.DataFrame(
+            data=pjpe_data,
+            index=coco_keypoint_names[:pjpe_data.shape[0]],
+            columns=['PJPE']
+        )
         activities_mpjpe = {}
         if self.all_activities is not None:
             for activity in self.activities_mpjpe.keys():

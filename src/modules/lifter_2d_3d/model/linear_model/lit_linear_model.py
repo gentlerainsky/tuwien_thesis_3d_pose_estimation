@@ -26,7 +26,9 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         return y_hat
 
     def training_step(self, batch, batch_idx):
-        img_id, arr_id, x, y, valid, activities = batch
+        x = batch['keypoints_2d']
+        y = batch['keypoints_3d']
+        valid = batch['valid']
         x = torch.flatten(x, start_dim=1).float().to(self.device)
         y = torch.flatten(y, start_dim=1).float().to(self.device)
         y_hat = self.model(x)
@@ -39,7 +41,11 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        img_id, arr_id, x, y, valid, activities = batch
+        x = batch['keypoints_2d']
+        y = batch['keypoints_3d']
+        activities = None
+        if 'activities' in batch:
+            activities = batch['activities']
         x = torch.flatten(x, start_dim=1).float().to(self.device)
         y = torch.flatten(y, start_dim=1).float().to(self.device)
         y_hat = self.model(x)
@@ -50,7 +56,11 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         )
 
     def test_step(self, batch, batch_idx):
-        img_id, arr_id, x, y, valid, activities = batch
+        x = batch['keypoints_2d']
+        y = batch['keypoints_3d']
+        activities = None
+        if 'activities' in batch:
+            activities = batch['activities']
         x = torch.flatten(x, start_dim=1).float().to(self.device)
         y = torch.flatten(y, start_dim=1).to(self.device)
         y_hat = self.model(x)

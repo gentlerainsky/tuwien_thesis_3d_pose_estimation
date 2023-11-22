@@ -49,8 +49,10 @@ class GroundTruthKeypointDataset():
     def __len__(self):
         return len(self.samples)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> dict:
         sample = self.samples[idx]
-        return sample['keypoints2D'][:, :2], sample['keypoints3D']
-        # return sample
+        return dict(
+            keypoints_2d=sample['keypoints2D'][:, :2],
+            keypoints_3d=sample['keypoints3D']
+        )
 

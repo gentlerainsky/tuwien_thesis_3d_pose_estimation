@@ -8,19 +8,6 @@ import datetime
 import numpy as np
 import os
 
-# def finetune():
-#     human_detector = HumanDetector(
-#         config_path='./src/modules/human_detector/config/faster_rcnn.py',
-#         pretrained_path='https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/'\
-#             'faster_rcnn_r101_caffe_fpn_1x_coco/faster_rcnn_r101_caffe_fpn_1x_coco_bbox_mAP-0.398_20200504_180057-b269e9dd.pth',
-#         checkpoint_path='./mmengine_workdir/human_detector/epoch_1.pth',
-#         data_root_path='/root/data/processed/synthetic_cabin_bw/A_Pillar_Codriver/',
-#         device='cuda:0',
-#         working_directory='./mmengine_workdir/human_detector',
-#         log_level='CRITICAL'
-#     )
-#     human_detector.finetune()
-
 
 def infer_2d_pose_estimation(
     dataset_root_path = f'/root/data/processed/synthetic_cabin_bw/A_Pillar_Codriver/',
@@ -28,24 +15,34 @@ def infer_2d_pose_estimation(
     pretrained_path='https://download.openmmlab.com/mmpose/v1' \
         '/body_2d_keypoint/topdown_heatmap/coco'\
             '/td-hm_hrnet-w32_8xb64-210e_coco-256x192-81c58e40_20220909.pth',
-    # checkpoint_path="mmengine_workdir/pose_estimator_2d/best_coco_AP_epoch_0.pth",
     checkpoint_path="mmengine_workdir/pose_estimator_2d/best_coco_AP_epoch_9.pth",
-    # data_root_path='/root/data/processed/synthetic_cabin_bw/A_Pillar_Codriver/',
     device='cuda:0',
     working_directory='mmengine_workdir/pose_estimator_2d',
-    log_level='INFO'
+    log_level='INFO',
+    use_ground_truth_bbox=False
 ):
     dataset_root = pathlib.Path(dataset_root_path)
-    pose_estimator_2d = PoseEstimator2D(
-        config_path=config_path,
-        pretrained_path=pretrained_path,
-        # checkpoint_path="mmengine_workdir/pose_estimator_2d/best_coco_AP_epoch_0.pth",
-        checkpoint_path=checkpoint_path,
-        data_root_path=dataset_root_path,
-        device=device,
-        working_directory=working_directory,
-        log_level=log_level
-    )
+    if use_ground_truth_bbox:
+        pose_estimator_2d = PoseEstimator2D(
+            config_path=config_path,
+            pretrained_path=pretrained_path,
+            checkpoint_path=checkpoint_path,
+            data_root_path=dataset_root_path,
+            device=device,
+            working_directory=working_directory,
+            log_level=log_level,
+            use_groundtruth_bbox=True
+        )
+    else:
+        pose_estimator_2d = PoseEstimator2D(
+            config_path=config_path,
+            pretrained_path=pretrained_path,
+            checkpoint_path=checkpoint_path,
+            data_root_path=dataset_root_path,
+            device=device,
+            working_directory=working_directory,
+            log_level=log_level
+        )
 
     pose_estimator_2d.load_pretrained()
     image_sets = ['train', 'val', 'test']
@@ -55,7 +52,10 @@ def infer_2d_pose_estimation(
         image_paths = list(image_folder.iterdir())
         count = 0
         max_count = len(image_paths)
-        bbox_detection_path = dataset_root / 'person_detection_results' / f'human_detection_{image_set}.json'
+        if use_ground_truth_bbox:
+            bbox_detection_path = dataset_root / 'person_detection_results' / f'ground_truth_human_detection_{image_set}.json'
+        else:
+            bbox_detection_path = dataset_root / 'person_detection_results' / f'human_detection_{image_set}.json'
         with bbox_detection_path.open() as f:
             bboxes = json.loads(f.read())
         annotation_path = dataset_root / 'annotations' / f'person_keypoints_{image_set}.json'
@@ -74,8 +74,6 @@ def infer_2d_pose_estimation(
             keypoint_scores = pose_estimator_2d_result[0].pred_instances['keypoint_scores']
             score = np.mean(keypoint_scores * bbox_info['score'])
             keypoints = pose_estimator_2d_result[0].pred_instances['keypoints']
-            # print(keypoints.shape)
-            # print(np.expand_dims(keypoint_scores, 2).shape)
             keypoint_result = np.dstack([keypoints, np.expand_dims(keypoint_scores, 2)])
             result = {
                 'image_id': int(bbox_info['image_id']),
@@ -85,7 +83,6 @@ def infer_2d_pose_estimation(
                 'scale': pose_estimator_2d_result[0].gt_instances['bbox_scales'][0].astype(float).round(decimals=4).tolist(),
                 'center': pose_estimator_2d_result[0].gt_instances['bbox_centers'][0].astype(float).round(decimals=4).tolist()
             }
-            # print(f'result\n{result}')
             results.append(result)
             count += 1
             if (count + 1) % 500 == 0:
@@ -95,8 +92,6 @@ def infer_2d_pose_estimation(
                         f'= {(count + 1)/max_count:.4f}'
                 )
 
-            # if (count + 1) % 10 == 0:
-                # break
         end_time = datetime.datetime.now()
         total_secs = (end_time - start_time).total_seconds()
         total_mins = total_secs / 60
@@ -107,7 +102,11 @@ def infer_2d_pose_estimation(
         if not result_folder.exists():
             print(f'created a folder at {str(result_folder)}.')
             os.makedirs(str(result_folder))
-        with (result_folder / f'keypoint_detection_{image_set}.json').open('w') as f:
+        if use_ground_truth_bbox:
+            output_file = result_folder / f'keypoint_detection_with_ground_truth_bbox_{image_set}.json'
+        else:
+            output_file = result_folder / f'keypoint_detection_{image_set}.json'
+        with output_file.open('w') as f:
             json.dump(results, f, indent=2)
 
 
