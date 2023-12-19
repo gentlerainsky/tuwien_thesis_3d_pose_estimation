@@ -22,6 +22,7 @@ class Evaluator:
         mpjpe_list = []
         pred_3d = pred_3d.reshape(pred_3d.shape[0], -1, 3)
         gt_3d = gt_3d.reshape(gt_3d.shape[0], -1, 3)
+        # Loop over each sample in a batch
         for i in range(gt_3d.shape[0]):
             mask = (gt_3d[i] != 0)
             pjpe = np.sqrt(
@@ -42,6 +43,8 @@ class Evaluator:
             input_activities = np.array(input_activities)
             for activity in self.all_activities:
                 mask = np.array(input_activities == activity)
+                if np.all(~mask):
+                    continue
                 _, activities_mpjpe = self.calculate_mpjpe(pred_3d[mask], gt_3d[mask])
                 if activity not in self.activities_mpjpe:
                     self.activities_mpjpe[activity] = []

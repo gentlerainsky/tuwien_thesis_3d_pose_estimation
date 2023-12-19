@@ -32,11 +32,17 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         x = torch.flatten(x, start_dim=1).float().to(self.device)
         y = torch.flatten(y, start_dim=1).float().to(self.device)
         y_hat = self.model(x)
-        # print(y_hat[valid].shape, y[valid].shape)
+        # y_hat.shape => batch x flatten(keypoinys_3d)
+        # TODO: Fix the calculation to consider only "valid"
         loss = F.mse_loss(
-            y_hat.reshape(y_hat.shape[0], -1, 3)[valid],
-            y.reshape(y.shape[0], -1, 3)[valid],
+            y_hat.reshape(y_hat.shape[0], -1, 3),
+            y.reshape(y.shape[0], -1, 3),
+            reduction='none'
         )
+        # mask out invalid batch
+        loss = loss.sum(axis=2) * (valid).float()
+        # Mean square error
+        loss = loss.mean()
         self.train_loss_log.append(torch.sqrt(loss).item())
         return loss
 
