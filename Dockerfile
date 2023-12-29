@@ -29,5 +29,7 @@ RUN apt-get -y install git wget
 RUN mim install mmdet
 RUN pip install tensorboard
 RUN pip install wandb
+RUN pip install einops
+RUN pip install timm
 ADD Makefile /workspace
 # ADD requirements.txt /workspace
