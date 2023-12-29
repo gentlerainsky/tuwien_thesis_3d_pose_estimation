@@ -206,8 +206,7 @@ class GraFormer(nn.Module):
                  n_head=4,  dropout=0.1, n_pts=21):
         super(GraFormer, self).__init__()
         self.n_layers = num_layers
-        self.adj = adj
-
+        self.register_buffer("adj", adj)
         _gconv_input = ChebConv(in_c=coords_dim[0], out_c=hid_dim, K=2)
         _gconv_layers = []
         _attention_layer = []

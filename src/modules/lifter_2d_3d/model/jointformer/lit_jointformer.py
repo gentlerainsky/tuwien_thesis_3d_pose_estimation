@@ -65,7 +65,7 @@ node_groups = [
 connections = np.array(connections)[:,:2].astype(int).tolist()
 
 
-class LitGraformer(pl.LightningModule):
+class LitJointFormer(pl.LightningModule):
     def __init__(
             self,
             exclude_ankle=False,
@@ -86,7 +86,7 @@ class LitGraformer(pl.LightningModule):
 
         adj = torch.tensor(adj_mx_from_edges(num_pts=num_pts, edges=_connections).to_dense())
         self.register_buffer('adj', adj)
-        self.model = GraFormer(adj=adj, hid_dim=128, n_pts=num_pts)
+        self.model = 
         self.register_buffer('src_mask', torch.tensor(
             [[[True] * num_pts]]
         ))

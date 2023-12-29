@@ -79,7 +79,6 @@ class ChebConv(nn.Module):
         """
         L = ChebConv.get_laplacian(graph, self.normalize)  # [N, N]
         mul_L = self.cheb_polynomial(L).unsqueeze(1)   # [K, 1, N, N]
-
         result = torch.matmul(mul_L, inputs)  # [K, B, N, C]
 
         result = torch.matmul(result, self.weight)  # [K, B, N, D]
@@ -154,7 +153,7 @@ class _GraphConv(nn.Module):
 class _ResChebGC(nn.Module):
     def __init__(self, adj, input_dim, output_dim, hid_dim, p_dropout):
         super(_ResChebGC, self).__init__()
-        self.adj = adj
+        self.register_buffer("adj", adj)
         self.gconv1 = _GraphConv(input_dim, hid_dim, p_dropout)
         self.gconv2 = _GraphConv(hid_dim, output_dim, p_dropout)
 
