@@ -2,11 +2,9 @@ import torch
 import numpy as np
 import pytorch_lightning as pl
 from torch.nn import functional as F
-from src.modules.lifter_2d_3d.model.graformer.network.GraFormer import GraFormer, src_mask
-# from src.modules.lifter_2d_3d.model.semgcn.utils.skeleton import Skeleton
-# from src.modules.lifter_2d_3d.model.semgcn.utils.graph_utils import adj_mx_from_edges
 from src.modules.lifter_2d_3d.utils.evaluation import Evaluator
 from src.modules.lifter_2d_3d.model.semgcn.utils.graph_utils import adj_mx_from_edges
+from src.modules.lifter_2d_3d.model.jointformer.network.jointformer import JointTransformer
 
 
 connections = [
@@ -86,10 +84,9 @@ class LitJointFormer(pl.LightningModule):
 
         adj = torch.tensor(adj_mx_from_edges(num_pts=num_pts, edges=_connections).to_dense())
         self.register_buffer('adj', adj)
-        self.model = 
-        self.register_buffer('src_mask', torch.tensor(
-            [[[True] * num_pts]]
-        ))
+        self.model = JointTransformer(num_joints_in=num_pts, n_layers=4, encoder_dropout=0, d_model=64, intermediate=True,
+                            spatial_encoding=False, pred_dropout=0.2, embedding_type='conv', adj=adj).cuda()
+        
         self.learning_rate = learning_rate
         self.val_loss_log = []
         self.val_print_count = 0
@@ -99,8 +96,16 @@ class LitJointFormer(pl.LightningModule):
 
     def forward(self, x, batch_idx):
         # use forward for inference/predictions        
-        y_hat = self.model(x, self.src_mask)
+        y_hat = self.model(x)
         return y_hat
+
+    def calculate_valid_loss(self, y_hat, y, valid):
+        loss = F.mse_loss(y_hat, y, reduction='none')
+        # mask out invalid batch
+        loss = loss.sum(axis=2) * (valid).float()
+        # Mean square error
+        loss = loss.mean()
+        return loss
 
     def training_step(self, batch, batch_idx):
         x = batch['keypoints_2d']
@@ -108,14 +113,17 @@ class LitJointFormer(pl.LightningModule):
         valid = batch['valid']
         x = x.float()
         y = y.float()
-        y_hat = self.model(x, self.src_mask).squeeze()
-        loss = F.mse_loss(y_hat, y, reduction='none')
-        # mask out invalid batch
-        loss = loss.sum(axis=2) * (valid).float()
-        # Mean square error
-        loss = loss.mean()
-        self.train_loss_log.append(torch.sqrt(loss).item())
-        return loss
+        out, enc_output, error = self.model(x)
+        loss_3d_pos = 0
+        for outputs_3d, error_3d in zip(out, error):
+            true_error = torch.abs(outputs_3d.detach() - y)
+            loss_3d_pos += (
+                self.calculate_valid_loss(outputs_3d, y, valid)
+                + self.calculate_valid_loss(error_3d, true_error, valid)
+                ) / 2
+        loss_3d_pos = loss_3d_pos / len(out)
+        self.train_loss_log.append(torch.sqrt(loss_3d_pos).item())
+        return loss_3d_pos
 
     def validation_step(self, batch, batch_idx):
         x = batch['keypoints_2d']
@@ -125,7 +133,8 @@ class LitJointFormer(pl.LightningModule):
             activities = batch['activities']
         x = x.float()
         y = y.float()
-        y_hat = self.model(x, self.src_mask).squeeze()
+        out, enc_output, error = self.model(x)
+        y_hat = out[-1]
         self.evaluator.add_result(
             y_hat.detach().cpu().numpy(),
             y.detach().cpu().numpy(),
@@ -143,7 +152,8 @@ class LitJointFormer(pl.LightningModule):
             activities = batch['activities']
         x = x.float()
         y = y.float()
-        y_hat = self.model(x, self.src_mask).squeeze()
+        out, enc_output, error = self.model(x)
+        y_hat = out[-1]
         self.evaluator.add_result(
             y_hat.detach().cpu().numpy(),
             y.detach().cpu().numpy(),
