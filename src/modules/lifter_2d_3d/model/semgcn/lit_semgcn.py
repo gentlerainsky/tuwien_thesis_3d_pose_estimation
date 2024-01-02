@@ -52,11 +52,12 @@ parents = [
 ]
 
 node_groups = [
-    [1, 3], # left-right ear
-    [2, 4], # left-right eye
-    [5, 6], # left-right sholder
-    [7, 9], # left elbow-wrist
-    [8, 10], # right elbow-wrist
+    [1, 3], # right-eye-ear
+    [0], # nose
+    [2, 4], # left-eye-ear
+    [5, 6], # left-right-sholder
+    [7, 9], # right-elbow-wrist
+    [8, 10], # left-elbow-wrist
     [11, 12], # left-right hip
 ]
 
@@ -69,13 +70,14 @@ class LitSemGCN(pl.LightningModule):
         self.save_hyperparameters()
         num_pts = 17
         _connections=connections
+        _node_groups=node_groups
         if exclude_ankle:
             num_pts -= 2
-            _connections = connections[:-2]
+            _connections = _connections[:-2]
         if exclude_hip:
             num_pts -= 2
-            _connections = connections[:-2]
-            node_groups = node_groups[:-1]
+            _connections = _connections[:-2]
+            # _node_groups = _node_groups[:-1]
 
         adj = adj_mx_from_edges(num_pts=num_pts, edges=_connections).to_dense()
 
@@ -84,7 +86,7 @@ class LitSemGCN(pl.LightningModule):
             hid_dim=128,
             coords_dim=(2, 3),
             num_layers=4,
-            nodes_group=None,
+            nodes_group=_node_groups,
             p_dropout=None,
         )
         self.learning_rate = learning_rate

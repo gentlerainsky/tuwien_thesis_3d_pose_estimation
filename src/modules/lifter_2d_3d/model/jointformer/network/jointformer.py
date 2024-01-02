@@ -5,7 +5,7 @@ import numpy as np
 import math
 from typing import Tuple, Union, List
 from src.modules.lifter_2d_3d.model.jointformer.network.transformer import PositionalEncoding, EncoderLayer
-from src.modules.lifter_2d_3d.model.jointformer.network.sem_graph_conv import SemGraphConv
+from src.modules.lifter_2d_3d.model.semgcn.sem_graph_conv import SemGraphConv
 
 
 class ErrorRefinement(nn.Module):
