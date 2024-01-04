@@ -56,9 +56,8 @@ def get_sample_from_loader(dataloader, index = None):
     item_index = index
     if item_index is None:
         item_index = random.randint(0, len(loader.dataset))
-        print(f'Sample index = {item_index} is used.')
     sample = loader.dataset[item_index]
-    return sample
+    return item_index, sample
 
 
 def visualize_pose(pose_df):

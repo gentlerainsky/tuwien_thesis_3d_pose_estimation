@@ -83,7 +83,7 @@ class LitSimpleBaselineLinear(pl.LightningModule):
                 f"training loss from {len(self.train_loss_log)} batches: {np.mean(self.train_loss_log) * 1000}"
             )
         pjpe, mpjpe, activities_mpjpe = self.evaluator.get_result()
-        print(f"val MPJPE from: {len(self.val_loss_log)} batches : {mpjpe}")
+        print(f"val MPJPE from: {len(self.evaluator.mpjpe)} samples : {mpjpe}")
         self.log("val_loss", mpjpe)
         self.train_loss_log = []
         self.val_print_count += 1
