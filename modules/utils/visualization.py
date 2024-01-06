@@ -2,6 +2,59 @@ import random
 import numpy as np
 import plotly.express as px
 
+# Optimally distinct colors
+# generated from https://mokole.com/palette.html
+# joint_colors = [
+#     '#2f4f4f',
+#     '#8b4513',
+#     '#006400',
+#     '#4b0082',
+#     '#ff0000',
+#     '#ffa500',
+#     '#ffff00',
+#     '#00ff00',
+#     '#00fa9a',
+#     '#00bfff',
+#     '#0000ff',
+#     '#ff00ff',
+#     '#dda0dd',
+#     '#ff1493',
+#     '#ffe4b5',
+# ]
+joint_colors = [
+    '#2f4f4f',
+    '#7f0000',
+    '#006400',
+    '#000080',
+    '#ff0000',
+    '#ffff00',
+    '#c71585',
+    '#00ff00',
+    '#00fa9a',
+    '#00ffff',
+    '#0000ff',
+    '#ffa500',
+    '#ff00ff',
+    '#1e90ff',
+    '#f0e68c',
+]
+joint_sides = [
+    0, # 'M',
+    1, # 'L',
+    2, # 'R',
+    1, # 'L',
+    2, # 'R',
+    1, # 'L',
+    2, # 'R',
+    1, # 'L',
+    2, # 'R',
+    1, # 'L',
+    2, # 'R',
+    1, # 'L',
+    2, # 'R',
+    1, # 'L',
+    2, # 'R',           
+]
 
 def generate_connection_line(vals, valid_keypoints=None):
     L = 0
