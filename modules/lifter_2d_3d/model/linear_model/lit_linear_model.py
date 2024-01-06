@@ -15,6 +15,8 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         self.model = BaselineModel(exclude_ankle=exclude_ankle, exclude_hip=exclude_hip)
         self.learning_rate = learning_rate
         self.val_loss_log = []
+        self.val_history = []
+        self.test_history = []
         self.val_print_count = 0
         self.train_loss_log = []
         self.test_loss_log = []
@@ -88,6 +90,11 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         self.train_loss_log = []
         self.val_print_count += 1
         self.evaluator.reset()
+        self.val_history.append({
+            'pjpe': pjpe,
+            'mpjpe': mpjpe,
+            'activities_mpjpe': activities_mpjpe
+        })
 
     def on_test_epoch_end(self):
         pjpe, mpjpe, activities_mpjpe = self.evaluator.get_result()
@@ -96,6 +103,11 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         print(f'activities_mpjpe:\n{activities_mpjpe}')
         self.log("mpjpe", mpjpe)
         print(f"test mpjpe: {mpjpe}")
+        self.test_history.append({
+            'pjpe': pjpe,
+            'mpjpe': mpjpe,
+            'activities_mpjpe': activities_mpjpe
+        })
 
     # def configure_optimizers(self):
     #     # self.hparams available because we called self.save_hyperparameters()
