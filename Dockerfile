@@ -31,5 +31,6 @@ RUN pip install tensorboard
 RUN pip install wandb
 RUN pip install einops
 RUN pip install timm
+RUN pip install tensorboard
 ADD Makefile /workspace
 # ADD requirements.txt /workspace

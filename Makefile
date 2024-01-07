@@ -11,7 +11,7 @@ jupyter:
 	jupyter notebook --ip 0.0.0.0 --no-browser --allow-root --NotebookApp.iopub_data_rate_limit=100000 --NotebookApp.rate_limit_window 100000 --NotebookApp.token=0
 
 jupyter-bg:
-	jupyter notebook --quiet --ip 0.0.0.0 --no-browser --allow-root --NotebookApp.iopub_data_rate_limit=100000 --NotebookApp.rate_limit_window 100000 --no-browser --NotebookApp.token=0 &
+	jupyter notebook --ip 0.0.0.0 --no-browser --allow-root --NotebookApp.iopub_data_rate_limit=100000 --NotebookApp.rate_limit_window 100000 --no-browser --NotebookApp.token=0 &
 
 tensorboard:
 	# make tensorboard LOG_DIR="mmengine_workdir/pose_estimator_2d/20230802_135548/vis_data/"

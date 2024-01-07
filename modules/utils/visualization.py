@@ -1,26 +1,12 @@
 import random
 import numpy as np
 import plotly.express as px
+import torch
+import matplotlib.pyplot as plt
+
 
 # Optimally distinct colors
 # generated from https://mokole.com/palette.html
-# joint_colors = [
-#     '#2f4f4f',
-#     '#8b4513',
-#     '#006400',
-#     '#4b0082',
-#     '#ff0000',
-#     '#ffa500',
-#     '#ffff00',
-#     '#00ff00',
-#     '#00fa9a',
-#     '#00bfff',
-#     '#0000ff',
-#     '#ff00ff',
-#     '#dda0dd',
-#     '#ff1493',
-#     '#ffe4b5',
-# ]
 joint_colors = [
     '#2f4f4f',
     '#7f0000',
@@ -122,3 +108,143 @@ def visualize_pose(pose_df):
         }
     )
     fig.show()
+
+
+def plot_images(img_ids, img_paths, img_width, img_height, gt_kp_2d_list, figsize, colors):
+    if len(img_paths) > 1:
+        fig, axes = plt.subplots(1, len(img_paths), figsize=figsize)
+    else:
+        fig, ax = plt.subplots(figsize=figsize)
+        axes = [ax]
+    for idx, (gt_kp_2d, img_id, img_path) in enumerate(zip(gt_kp_2d_list, img_ids, img_paths)):
+        axes[idx].scatter(
+            gt_kp_2d[:, 0] * img_height,
+            gt_kp_2d[:, 1] * img_width,
+            c=colors,
+            marker='+',
+            alpha=.7,
+        )
+        axes[idx].imshow(plt.imread(img_path))
+        axes[idx].set_title(f'Image {img_id}')
+
+def plot_skeleton(
+        gt_kp_3d_list,
+        kp_3d_list,
+        valids,
+        figsize,
+        colors,
+        is_plot_gt_skeleton,
+        elev=15.,
+        azim=-120 + 45//2,
+        roll=0
+    ):
+    fig = plt.figure(figsize=figsize)
+    axes = []
+    for idx, (gt_kp_3d, kp_3d, valid) in enumerate(zip(gt_kp_3d_list, kp_3d_list, valids)):
+        if len(gt_kp_3d_list) == 1:
+            axes = [plt.axes(projection='3d')]
+        else:
+            axes.append(fig.add_subplot(1, len(gt_kp_3d_list), idx + 1, projection='3d'))
+        depth = gt_kp_3d[valid, 2]
+        x = gt_kp_3d[valid, 0]
+        y = gt_kp_3d[valid, 1]
+        # plotting
+        valid_colors = list(np.array(colors)[valid])
+        gt_plot = axes[idx].scatter3D(x, depth, -y, c=valid_colors, marker='o', alpha=.7, depthshade=False, label='Label')
+        depth = kp_3d[:, 2]
+        x = kp_3d[:, 0]
+        y = kp_3d[:, 1]
+        predict_plot = axes[idx].scatter3D(x, depth, -y, c=colors, marker='x', depthshade=False, label='Predict')
+
+        if is_plot_gt_skeleton:
+            results = generate_connection_line(gt_kp_3d)
+        else:
+            results = generate_connection_line(kp_3d)
+        for i in range(len(results) // 2):
+            axes[idx].plot3D(
+                [results[2*i]['x'], results[2*i + 1]['x']],
+                [results[2*i]['z'], results[2*i + 1]['z']],
+                [-results[2*i]['y'], -results[2*i + 1]['y']],
+            )
+        axes[idx].legend(loc='lower center')
+        # axes[idx].set_xlabel('X')
+        axes[idx].set_ylabel('Depth')
+        # axes[idx].set_zlabel('Y')
+        # axes[idx].set_xlim([-0.5, -0.5 + 0.8])
+        # axes[idx].set_zlim([-0.5, -0.5 + 0.8])
+        # axes[idx].set_ylim([0.7, 0.7 + 0.8])
+        axes[idx].axes.set_aspect('equal')
+        # axes[idx].xaxis.set_tick_params(labelsize=8, ticks=None)
+        # axes[idx].yaxis.set_tick_params(labelsize=8, ticks=None)
+        axes[idx].xaxis.set_ticks([])
+        axes[idx].zaxis.set_ticks([])
+        axes[idx].yaxis.set_tick_params(labelsize=8)
+        axes[idx].view_init(elev=elev, azim=azim, roll=roll)
+        axes[idx].xaxis.set_pane_color((0, 0, 0, .4))
+        axes[idx].yaxis.set_pane_color((0, 0, 0, .4))
+        axes[idx].zaxis.set_pane_color((0, 0, 0, .4))
+
+def plot_samples(
+        dataset_root_path,
+        model,
+        dataloader,
+        data_subset,
+        img_figsize,
+        img_width,
+        img_height,
+        plot_figsize,
+        sample_idices,
+        is_plot_gt_skeleton=True
+    ):
+    model.eval()
+    img_ids = []
+    img_paths = []
+    gt_keypoints_2d_list = []
+    gt_keypoints_3d_list = []
+    keypoints_3d_list = []
+    valids = []
+    for sample_idx in sample_idices:
+        sample = dataloader.dataset.samples[sample_idx]
+        gt_keypoints_3d = sample['keypoints3D']
+        gt_keypoints_2d = sample['keypoints2D']
+        valid = sample['valid']
+        estimated_pose = model(torch.flatten(torch.tensor(sample['keypoints2D'][:, :2])).unsqueeze(0).float().to(model.device), 0)
+        keypoints_3d = estimated_pose[0].cpu().reshape([-1, 3]).detach().numpy()
+    
+        img_path = (dataset_root_path / 'images' / data_subset / sample['filenames']).as_posix()
+        img_id = sample['id']
+        img_ids.append(img_id)
+        img_paths.append(img_path)
+        gt_keypoints_3d_list.append(gt_keypoints_3d)
+        gt_keypoints_2d_list.append(gt_keypoints_2d)
+        keypoints_3d_list.append(keypoints_3d)
+        valids.append(valid)
+    num_joints = gt_keypoints_2d.shape[0]
+
+    plot_images(
+        img_ids=img_ids,
+        img_paths=img_paths,
+        img_width=img_width,
+        img_height=img_height,
+        gt_kp_2d_list=gt_keypoints_2d_list,
+        figsize=img_figsize,
+        colors=joint_colors[:num_joints]
+    )
+    plot_skeleton(
+        gt_kp_3d_list=gt_keypoints_3d_list,
+        kp_3d_list=keypoints_3d_list,
+        valids=valids,
+        figsize=plot_figsize,
+        colors=joint_colors[:num_joints],
+        is_plot_gt_skeleton=is_plot_gt_skeleton,
+        elev=10., azim=-90 + 45//2, roll=0
+    )
+    plot_skeleton(
+        gt_kp_3d_list=gt_keypoints_3d_list,
+        kp_3d_list=keypoints_3d_list,
+        valids=valids,
+        figsize=plot_figsize,
+        colors=joint_colors[:num_joints],
+        is_plot_gt_skeleton=is_plot_gt_skeleton,
+        elev=0, azim=0
+    )
