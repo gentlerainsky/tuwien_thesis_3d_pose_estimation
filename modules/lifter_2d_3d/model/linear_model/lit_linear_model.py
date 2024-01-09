@@ -23,7 +23,7 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         self.evaluator = Evaluator(all_activities=all_activities)
         self.is_silence = is_silence
 
-    def forward(self, x, batch_idx):
+    def forward(self, x):
         # use forward for inference/predictions
         y_hat = self.model(x)
         return y_hat
