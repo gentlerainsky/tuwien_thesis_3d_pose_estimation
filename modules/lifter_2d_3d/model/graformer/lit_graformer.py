@@ -6,7 +6,7 @@ from modules.lifter_2d_3d.model.graformer.network.GraFormer import GraFormer, sr
 # from src.modules.lifter_2d_3d.model.semgcn.utils.skeleton import Skeleton
 # from src.modules.lifter_2d_3d.model.semgcn.utils.graph_utils import adj_mx_from_edges
 from modules.lifter_2d_3d.utils.evaluation import Evaluator
-from modules.lifter_2d_3d.model.semgcn.utils.graph_utils import adj_mx_from_edges
+from modules.lifter_2d_3d.model.semgcn.network.utils.graph_utils import adj_mx_from_edges
 
 
 connections = [

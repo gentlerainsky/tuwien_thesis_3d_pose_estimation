@@ -8,7 +8,7 @@ from modules.lifter_2d_3d.utils.evaluation import Evaluator
 
 class LitSimpleBaselineLinear(pl.LightningModule):
     def __init__(
-        self, exclude_ankle=False, learning_rate=1e-3, exclude_hip=False, all_activities=[]
+        self, exclude_ankle=False, learning_rate=1e-3, exclude_hip=False, all_activities=[], is_silence=False
     ):
         super().__init__()
         self.save_hyperparameters()
@@ -21,6 +21,7 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         self.train_loss_log = []
         self.test_loss_log = []
         self.evaluator = Evaluator(all_activities=all_activities)
+        self.is_silence = is_silence
 
     def forward(self, x, batch_idx):
         # use forward for inference/predictions
@@ -79,12 +80,14 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         )
 
     def on_validation_epoch_end(self):
+        # if not self.is_silence:
         print(f"check #{self.val_print_count}")
         if len(self.train_loss_log) > 0:
             print(
                 f"training loss from {len(self.train_loss_log)} batches: {np.mean(self.train_loss_log) * 1000}"
             )
         pjpe, mpjpe, activities_mpjpe = self.evaluator.get_result()
+        # if not self.is_silence:
         print(f"val MPJPE from: {len(self.evaluator.mpjpe)} samples : {mpjpe}")
         self.log("val_loss", mpjpe)
         self.train_loss_log = []
@@ -98,11 +101,12 @@ class LitSimpleBaselineLinear(pl.LightningModule):
 
     def on_test_epoch_end(self):
         pjpe, mpjpe, activities_mpjpe = self.evaluator.get_result()
-        print('MPJPE:', mpjpe)
-        print(f'PJPE\n{pjpe}')
-        print(f'activities_mpjpe:\n{activities_mpjpe}')
+        if not self.is_silence:
+            print('MPJPE:', mpjpe)
+            print(f'PJPE\n{pjpe}')
+            print(f'activities_mpjpe:\n{activities_mpjpe}')
+            print(f"test mpjpe: {mpjpe}")
         self.log("mpjpe", mpjpe)
-        print(f"test mpjpe: {mpjpe}")
         self.test_history.append({
             'pjpe': pjpe,
             'mpjpe': mpjpe,

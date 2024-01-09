@@ -15,8 +15,8 @@ test_dataloader = dict(
 )
 
 # train_cfg = dict(_delete_=True, max_iters=1000)
-visualizer = dict(vis_backends=[
-    dict(type='LocalVisBackend'),
-    dict(type='TensorboardVisBackend'),
-    dict(type='WandbVisBackend'),
-])
+# visualizer = dict(vis_backends=[
+#     dict(type='LocalVisBackend'),
+#     dict(type='TensorboardVisBackend'),
+#     dict(type='WandbVisBackend'),
+# ])

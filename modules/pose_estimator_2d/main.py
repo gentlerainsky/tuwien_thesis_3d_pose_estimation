@@ -70,7 +70,7 @@ def infer_2d_pose_estimation(
             bbox = np.array(bbox_info['bbox']).reshape(1, -1).astype(np.float32)
             image_filename = annotation_info[bbox_info['image_id']]['file_name']
             image_path = dataset_root / 'images' / image_set / image_filename
-            pose_estimator_2d_result = pose_estimator_2d.inference(image_path.as_posix(), bbox, bbox_format='xywh')
+            pose_estimator_2d_result = pose_estimator_2d.inference(image_path.as_posix(), bbox, bbox_format='xyxy')
             keypoint_scores = pose_estimator_2d_result[0].pred_instances['keypoint_scores']
             score = np.mean(keypoint_scores * bbox_info['score'])
             keypoints = pose_estimator_2d_result[0].pred_instances['keypoints']

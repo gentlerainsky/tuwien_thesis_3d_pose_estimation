@@ -121,7 +121,7 @@ def plot_images(img_ids, img_paths, img_width, img_height, gt_kp_2d_list, figsiz
             gt_kp_2d[:, 0] * img_height,
             gt_kp_2d[:, 1] * img_width,
             c=colors,
-            marker='+',
+            marker='o',
             alpha=.7,
         )
         axes[idx].imshow(plt.imread(img_path))
