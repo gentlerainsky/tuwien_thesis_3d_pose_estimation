@@ -58,7 +58,7 @@ class Linear(nn.Module):
         h = self.bn1(h)
         h = self.relu(h)
         h = self.dropout(h)
-        
+
         h = self.w2(h)
         h = self.bn2(h)
         h = self.relu(h)
@@ -68,7 +68,14 @@ class Linear(nn.Module):
 
 
 class BaselineModel(nn.Module):
-    def __init__(self, linear_size=1024, num_stages=2, p_dropout=0.5, exclude_ankle=False, exclude_hip=False):
+    def __init__(
+        self,
+        linear_size=1024,
+        num_stages=2,
+        p_dropout=0.5,
+        exclude_ankle=False,
+        exclude_knee=False,
+    ):
         """
 
         Args:
@@ -80,7 +87,7 @@ class BaselineModel(nn.Module):
         num_keypoints = 17
         if exclude_ankle:
             num_keypoints = 15
-        if exclude_hip:
+        if exclude_knee:
             num_keypoints = 13
         # input_size = 16 * 2  # Input 2d-joints.
         self.input_size = num_keypoints * 2

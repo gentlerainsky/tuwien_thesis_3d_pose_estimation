@@ -1,0 +1,1 @@
+saved_lifter_2d_3d_model/drive_and_act/transfer_learning/synthetic_cabin_ir/all_actors/linear_model_all_actor/lightning_logs/version_0/checkpoints/epoch=9-step=3570.ckpt

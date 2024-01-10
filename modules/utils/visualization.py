@@ -208,7 +208,7 @@ def plot_samples(
         gt_keypoints_3d = sample['keypoints3D']
         gt_keypoints_2d = sample['keypoints2D']
         valid = sample['valid']
-        estimated_pose = model(torch.flatten(torch.tensor(sample['keypoints2D'][:, :2])).unsqueeze(0).float().to(model.device), 0)
+        estimated_pose = model(torch.flatten(torch.tensor(sample['keypoints2D'][:, :2])).unsqueeze(0).float().to(model.device))
         keypoints_3d = estimated_pose[0].cpu().reshape([-1, 3]).detach().numpy()
     
         img_path = (dataset_root_path / 'images' / data_subset / sample['filenames']).as_posix()

@@ -8,21 +8,16 @@ from modules.lifter_2d_3d.utils.evaluation import Evaluator
 
 class LitGraphMLP(pl.LightningModule):
     def __init__(
-            self,
-            exclude_ankle=False,
-            learning_rate=1e-3,
-            exclude_hip=False,
-            all_activities=[]
-        ):
+        self,
+        exclude_ankle=False,
+        learning_rate=1e-3,
+        exclude_knee=False,
+        all_activities=[],
+    ):
         super().__init__()
         self.save_hyperparameters()
         self.model = GraphMLP(
-            frames=1,
-            depth=3,
-            d_hid=1024,
-            token_dim=256,
-            channel=512,
-            n_joints=13
+            frames=1, depth=3, d_hid=1024, token_dim=256, channel=512, n_joints=13
         )
         self.learning_rate = learning_rate
         self.val_loss_log = []
@@ -32,18 +27,18 @@ class LitGraphMLP(pl.LightningModule):
         self.evaluator = Evaluator(all_activities=all_activities)
 
     def forward(self, x, batch_idx):
-        # use forward for inference/predictions        
+        # use forward for inference/predictions
         y_hat = self.model(x)
         return y_hat
 
     def training_step(self, batch, batch_idx):
-        x = batch['keypoints_2d']
-        y = batch['keypoints_3d']
-        valid = batch['valid']
+        x = batch["keypoints_2d"]
+        y = batch["keypoints_3d"]
+        valid = batch["valid"]
         x = x.float().unsqueeze(1).to(self.device)
         y = y.float().to(self.device)
         y_hat = self.model(x).squeeze()
-        loss = F.mse_loss(y_hat, y, reduction='none')
+        loss = F.mse_loss(y_hat, y, reduction="none")
         # mask out invalid batch
         loss = loss.sum(axis=2) * (valid).float()
         # Mean square error
@@ -52,37 +47,33 @@ class LitGraphMLP(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        x = batch['keypoints_2d']
-        y = batch['keypoints_3d']
+        x = batch["keypoints_2d"]
+        y = batch["keypoints_3d"]
         activities = None
-        if 'activities' in batch:
-            activities = batch['activities']
+        if "activities" in batch:
+            activities = batch["activities"]
         x = x.float().unsqueeze(1).to(self.device)
         y = y.float().to(self.device)
         y_hat = self.model(x).squeeze()
         self.evaluator.add_result(
-            y_hat.detach().cpu().numpy(),
-            y.detach().cpu().numpy(),
-            activities
+            y_hat.detach().cpu().numpy(), y.detach().cpu().numpy(), activities
         )
         # loss = F.mse_loss(y_hat, y)
         # self.val_loss_log.append(torch.sqrt(loss).item())
         # return loss
 
     def test_step(self, batch, batch_idx):
-        x = batch['keypoints_2d']
-        y = batch['keypoints_3d']
+        x = batch["keypoints_2d"]
+        y = batch["keypoints_3d"]
         activities = None
-        if 'activities' in batch:
-            activities = batch['activities']
+        if "activities" in batch:
+            activities = batch["activities"]
 
         x = x.float().unsqueeze(1).to(self.device)
         y = y.float().to(self.device)
         y_hat = self.model(x).squeeze()
         self.evaluator.add_result(
-            y_hat.detach().cpu().numpy(),
-            y.detach().cpu().numpy(),
-            activities
+            y_hat.detach().cpu().numpy(), y.detach().cpu().numpy(), activities
         )
         # loss = F.mse_loss(y_hat, y)
         # self.test_loss_log.append(torch.sqrt(loss).item())
@@ -115,22 +106,20 @@ class LitGraphMLP(pl.LightningModule):
         # self.log("test_loss", test_loss)
         # print(f't loss from {len(self.test_loss_log)} batches: {np.mean(self.test_loss_log) * 1000}')
         pjpe, mpjpe, activities_mpjpe = self.evaluator.get_result()
-        print('MPJPE:', mpjpe)
-        print(f'PJPE\n{pjpe}')
-        print(f'activities_mpjpe:\n{activities_mpjpe}')
+        print("MPJPE:", mpjpe)
+        print(f"PJPE\n{pjpe}")
+        print(f"activities_mpjpe:\n{activities_mpjpe}")
         self.log("mpjpe", mpjpe)
         print(f"test mpjpe: {mpjpe}")
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        sch = torch.optim.lr_scheduler.StepLR(
-            optimizer, step_size = 1, gamma = 0.96
-        )
-        #learning rate scheduler
+        sch = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.96)
+        # learning rate scheduler
         return {
-            "optimizer":optimizer,
-            "lr_scheduler" : {
-                "scheduler" : sch,
-                "monitor" : "train_loss",
-            }
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": sch,
+                "monitor": "train_loss",
+            },
         }
