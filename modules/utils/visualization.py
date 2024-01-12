@@ -3,6 +3,7 @@ import numpy as np
 import plotly.express as px
 import torch
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 
 
 # Optimally distinct colors
@@ -110,21 +111,32 @@ def visualize_pose(pose_df):
     fig.show()
 
 
-def plot_images(img_ids, img_paths, img_width, img_height, gt_kp_2d_list, figsize, colors):
+def plot_images(
+        img_ids, img_paths, gt_kp_2d_list, figsize, colors,
+        root_2d_list, scale_factor_list, bbox_list
+    ):
     if len(img_paths) > 1:
         fig, axes = plt.subplots(1, len(img_paths), figsize=figsize)
     else:
         fig, ax = plt.subplots(figsize=figsize)
         axes = [ax]
-    for idx, (gt_kp_2d, img_id, img_path) in enumerate(zip(gt_kp_2d_list, img_ids, img_paths)):
+    for idx, (gt_kp_2d, img_id, img_path, root_2d, scale_factor, bbox) in enumerate(zip(gt_kp_2d_list, img_ids, img_paths, root_2d_list, scale_factor_list, bbox_list)):
+        x_offset = root_2d[0]
+        y_offset = root_2d[1]
+        width, height = scale_factor
         axes[idx].scatter(
-            gt_kp_2d[:, 0] * img_height,
-            gt_kp_2d[:, 1] * img_width,
+            gt_kp_2d[:, 0] * height + x_offset,
+            gt_kp_2d[:, 1] * width + y_offset,
             c=colors,
             marker='o',
             alpha=.7,
         )
         axes[idx].imshow(plt.imread(img_path))
+        # draw highest match bbox as green
+        x, y, x2, y2 = bbox
+        w, h = x2 - x, y2 - y
+        rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='g', facecolor='none', label='high bbox')
+        axes[idx].add_patch(rect)
         axes[idx].set_title(f'Image {img_id}')
 
 def plot_skeleton(
@@ -190,8 +202,6 @@ def plot_samples(
         dataloader,
         data_subset,
         img_figsize,
-        img_width,
-        img_height,
         plot_figsize,
         sample_idices,
         is_plot_gt_skeleton=True
@@ -202,11 +212,20 @@ def plot_samples(
     gt_keypoints_2d_list = []
     gt_keypoints_3d_list = []
     keypoints_3d_list = []
+    root_2d_list = []
+    root_3d_list = []
+    scale_factor_list = []
+    bbox_list = []
     valids = []
     for sample_idx in sample_idices:
         sample = dataloader.dataset.samples[sample_idx]
         gt_keypoints_3d = sample['keypoints3D']
         gt_keypoints_2d = sample['keypoints2D']
+        root_2d = sample['root_2d']
+        root_3d = sample['root_3d']
+        bbox = sample['bbox']
+        print(bbox)
+        scale_factor = sample['scale_factor']
         valid = sample['valid']
         estimated_pose = model(torch.flatten(torch.tensor(sample['keypoints2D'][:, :2])).unsqueeze(0).float().to(model.device))
         keypoints_3d = estimated_pose[0].cpu().reshape([-1, 3]).detach().numpy()
@@ -219,14 +238,19 @@ def plot_samples(
         gt_keypoints_2d_list.append(gt_keypoints_2d)
         keypoints_3d_list.append(keypoints_3d)
         valids.append(valid)
+        root_2d_list.append(root_2d)
+        root_3d_list.append(root_3d)
+        scale_factor_list.append(scale_factor)
+        bbox_list.append(bbox)
     num_joints = gt_keypoints_2d.shape[0]
 
     plot_images(
         img_ids=img_ids,
         img_paths=img_paths,
-        img_width=img_width,
-        img_height=img_height,
         gt_kp_2d_list=gt_keypoints_2d_list,
+        root_2d_list=root_2d_list,
+        scale_factor_list=scale_factor_list,
+        bbox_list=bbox_list,
         figsize=img_figsize,
         colors=joint_colors[:num_joints]
     )

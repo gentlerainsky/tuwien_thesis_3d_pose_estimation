@@ -12,6 +12,7 @@ RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machi
 RUN apt-get update
 RUN apt-get -y install build-essential libgtk-3-dev
 RUN apt update
+# RUN apt -y install git wget
 RUN pip install --upgrade pip
 RUN pip install torch torchvision torchaudio
 RUN pip install jupyter
@@ -23,9 +24,8 @@ RUN pip install opencv-python
 RUN pip install torch_geometric
 RUN pip install -U openmim
 RUN mim install mmengine
-RUN mim install mmpose
+RUN mim install mmpose==1.3.1
 RUN mim install mmcv
-RUN apt-get -y install git wget
 RUN mim install mmdet
 RUN pip install tensorboard
 RUN pip install wandb
