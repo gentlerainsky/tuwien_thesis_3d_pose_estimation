@@ -59,27 +59,37 @@ class LitSimpleBaselineLinear(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         x = batch["keypoints_2d"]
         y = batch["keypoints_3d"]
+        valid = batch["valid"]
         activities = None
         if "activities" in batch:
             activities = batch["activities"]
         x = torch.flatten(x, start_dim=1).float().to(self.device)
         y = torch.flatten(y, start_dim=1).float().to(self.device)
+        valid = torch.flatten(valid, start_dim=1)
         y_hat = self.model(x)
         self.evaluator.add_result(
-            y_hat.detach().cpu().numpy(), y.detach().cpu().numpy(), activities
+            y_hat.detach().cpu().numpy(),
+            y.detach().cpu().numpy(),
+            valid.detach().cpu().numpy(),
+            activities
         )
 
     def test_step(self, batch, batch_idx):
         x = batch["keypoints_2d"]
         y = batch["keypoints_3d"]
+        valid = batch["valid"]
         activities = None
         if "activities" in batch:
             activities = batch["activities"]
         x = torch.flatten(x, start_dim=1).float().to(self.device)
         y = torch.flatten(y, start_dim=1).to(self.device)
+        valid = torch.flatten(valid, start_dim=1)
         y_hat = self.model(x)
         self.evaluator.add_result(
-            y_hat.detach().cpu().numpy(), y.detach().cpu().numpy(), activities
+            y_hat.detach().cpu().numpy(),
+            y.detach().cpu().numpy(),
+            valid.detach().cpu().numpy(),
+            activities
         )
 
     def on_validation_epoch_end(self):

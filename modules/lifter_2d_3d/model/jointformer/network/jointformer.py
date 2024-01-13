@@ -4,7 +4,10 @@ import torch.nn.functional as F
 import numpy as np
 import math
 from typing import Tuple, Union, List
-from modules.lifter_2d_3d.model.jointformer.network.transformer import PositionalEncoding, EncoderLayer
+from modules.lifter_2d_3d.model.jointformer.network.transformer import (
+    PositionalEncoding,
+    EncoderLayer,
+)
 from modules.lifter_2d_3d.model.semgcn.sem_graph_conv import SemGraphConv
 
 
@@ -46,10 +49,21 @@ class ErrorRefinement(nn.Module):
         Forward pass through the module. Given an input pose, predicted pose and predicted error will refine the predicted pose.
     """
 
-    def __init__(self, num_joints_in: int=16, n_features: Tuple[int]=(2, 3), n_layers: int=4, d_model: int=128, 
-                 d_inner: int=512, n_head: int=8, d_k: int=64, d_v: int=64, encoder_dropout: float=0.0, pred_dropout: float=0.2,
-                 intermediate: bool=False, spatial_encoding: bool=False) -> None:
-
+    def __init__(
+        self,
+        num_joints_in: int = 16,
+        n_features: Tuple[int] = (2, 3),
+        n_layers: int = 4,
+        d_model: int = 128,
+        d_inner: int = 512,
+        n_head: int = 8,
+        d_k: int = 64,
+        d_v: int = 64,
+        encoder_dropout: float = 0.0,
+        pred_dropout: float = 0.2,
+        intermediate: bool = False,
+        spatial_encoding: bool = False,
+    ) -> None:
         """
         Initialize the network.
         """
@@ -59,40 +73,65 @@ class ErrorRefinement(nn.Module):
         self.spatial_encoding = spatial_encoding
         self.intermediate = intermediate
 
-        self.embedding = nn.Conv1d(n_features[0] + 2 * n_features[1], d_model, 1)  # Input features + predicted features + predicted error -> hidden dimension.
-        self.embedding_forward = lambda x: self.embedding(x.permute(0, 2, 1)).permute(0, 2, 1)
+        self.embedding = nn.Conv1d(
+            n_features[0] + 2 * n_features[1], d_model, 1
+        )  # Input features + predicted features + predicted error -> hidden dimension.
+        self.embedding_forward = lambda x: self.embedding(x.permute(0, 2, 1)).permute(
+            0, 2, 1
+        )
 
         # Positional encoding.
         if self.spatial_encoding:
-            self.position_enc = nn.Parameter(torch.zeros(1, num_joints_in, d_model))    
+            self.position_enc = nn.Parameter(torch.zeros(1, num_joints_in, d_model))
         self.dropout = nn.Dropout(p=encoder_dropout)
 
         # Stacked encoders.
-        self.layer_stack = nn.ModuleList([
-            EncoderLayer(d_model, d_inner, n_head, d_k, d_v, dropout=encoder_dropout)
-            for _ in range(n_layers)])
+        self.layer_stack = nn.ModuleList(
+            [
+                EncoderLayer(
+                    d_model, d_inner, n_head, d_k, d_v, dropout=encoder_dropout
+                )
+                for _ in range(n_layers)
+            ]
+        )
         self.layer_norm = nn.LayerNorm(d_model, eps=1e-6)
 
         # Output prediction.
         if self.intermediate:
-            self.intermediate_pred = nn.ModuleList([nn.Sequential(nn.LayerNorm(num_joints_in * d_model), nn.Dropout(p=pred_dropout), nn.Linear(num_joints_in * d_model, num_joints_in * n_features[1])) for _ in range(n_layers)])
-            self.intermediate_enc = nn.ModuleList([nn.Linear(num_joints_in * n_features[1], num_joints_in * d_model) for _ in range(n_layers)])
+            self.intermediate_pred = nn.ModuleList(
+                [
+                    nn.Sequential(
+                        nn.LayerNorm(num_joints_in * d_model),
+                        nn.Dropout(p=pred_dropout),
+                        nn.Linear(
+                            num_joints_in * d_model, num_joints_in * n_features[1]
+                        ),
+                    )
+                    for _ in range(n_layers)
+                ]
+            )
+            self.intermediate_enc = nn.ModuleList(
+                [
+                    nn.Linear(num_joints_in * n_features[1], num_joints_in * d_model)
+                    for _ in range(n_layers)
+                ]
+            )
         else:
             self.decoder = nn.Sequential(
                 nn.LayerNorm(num_joints_in * d_model),
-                nn.Dropout(p=pred_dropout),                        
-                nn.Linear(num_joints_in * d_model, num_joints_in * n_features[1])
+                nn.Dropout(p=pred_dropout),
+                nn.Linear(num_joints_in * d_model, num_joints_in * n_features[1]),
             )
 
         # Initialize layers with xavier.
         for p in self.parameters():
             if p.dim() > 1:
-                nn.init.xavier_uniform_(p) 
+                nn.init.xavier_uniform_(p)
 
     def forward(self, src: torch.Tensor) -> Union[List[torch.Tensor], torch.Tensor]:
         """
         Forward pass through the network. Input is a sequence of 2D joints, predicted 3D joints and predicted error belonging to one pose.
-        
+
         Parameters
         ----------
         src: torch.Tensor
@@ -105,16 +144,16 @@ class ErrorRefinement(nn.Module):
             The shape is [B, J, 3]. In case a list is returned, they are ordered from first encoder layer to last encoder layer.
         """
 
-        b, j, _ = src.shape  # Batch, Number of joints, Number of features per joint
+        b, j, _ = shape  # Batch, Number of joints, Number of features per joint
         intermediate_list = []
 
         # Expand dimensions.
         src = self.embedding_forward(src)
-        
+
         # Positional encoding.
         if self.spatial_encoding:
             src += self.position_enc
- 
+
         enc_output = self.dropout(src)
         enc_output = self.layer_norm(enc_output)
 
@@ -132,11 +171,11 @@ class ErrorRefinement(nn.Module):
 
             enc_output += residual
             enc_output = F.relu(enc_output)
- 
+
         # Final prediction.
         if self.intermediate:
             out = [out.view(b, j, -1) for out in intermediate_list]
-        else:  
+        else:
             out = self.decoder(enc_output.view(b, -1)).view(b, j, -1)
 
         return out
@@ -144,7 +183,7 @@ class ErrorRefinement(nn.Module):
 
 class JointTransformer(nn.Module):
     """
-    The joint transformer model that predicts 3D poses from 2D poses. 
+    The joint transformer model that predicts 3D poses from 2D poses.
 
     Arguments
     ---------
@@ -187,11 +226,24 @@ class JointTransformer(nn.Module):
         Returns the predicted pose, the last hidden state of the transformer encoders and the predicted error.
     """
 
-    def __init__(self, num_joints_in: int=16, n_features: Tuple[int]=(2, 3), n_layers: int=4, d_model: int=128, 
-                 d_inner: int=512, n_head: int=8, d_k: int=64, d_v: int=64, encoder_dropout: float=0.0, pred_dropout: float=0.2, 
-                 intermediate: bool=False, spatial_encoding: bool=False, embedding_type: str='conv', adj: torch.Tensor=None,
-                 error_prediction: bool=True) -> None:
-
+    def __init__(
+        self,
+        num_joints_in: int = 16,
+        n_features: Tuple[int] = (2, 3),
+        n_layers: int = 4,
+        d_model: int = 128,
+        d_inner: int = 512,
+        n_head: int = 8,
+        d_k: int = 64,
+        d_v: int = 64,
+        encoder_dropout: float = 0.0,
+        pred_dropout: float = 0.2,
+        intermediate: bool = False,
+        spatial_encoding: bool = False,
+        embedding_type: str = "conv",
+        adj: torch.Tensor = None,
+        error_prediction: bool = True,
+    ) -> None:
         """
         Initialize the network.
         """
@@ -201,61 +253,110 @@ class JointTransformer(nn.Module):
         self.intermediate = intermediate
         self.error_prediction = error_prediction
         self.spatial_encoding = spatial_encoding
-        assert embedding_type in ['conv', 'linear', 'graph'], 'The chosen embedding type \'{}\' is not supported.'.format(embedding_type)
+        assert embedding_type in [
+            "conv",
+            "linear",
+            "graph",
+        ], "The chosen embedding type '{}' is not supported.".format(embedding_type)
         self.embedding_type = embedding_type
 
         # Expand from x,y input coordinates to the size of the hidden dimension.
-        if embedding_type == 'conv':
+        if embedding_type == "conv":
             self.embedding = nn.Conv1d(n_features[0], d_model, 1)
-            self.embedding_forward = lambda x: self.embedding(x.permute(0, 2, 1)).permute(0, 2, 1)
-        elif embedding_type == 'linear':
-            self.embedding = nn.Linear(n_features[0] * num_joints_in, d_model * num_joints_in)
-            self.embedding_forward = lambda x: self.embedding(x.reshape(x.size(0), -1)).view(x.size(0), x.size(1), -1)
-        elif embedding_type == 'graph':
+            self.embedding_forward = lambda x: self.embedding(
+                x.permute(0, 2, 1)
+            ).permute(0, 2, 1)
+        elif embedding_type == "linear":
+            self.embedding = nn.Linear(
+                n_features[0] * num_joints_in, d_model * num_joints_in
+            )
+            self.embedding_forward = lambda x: self.embedding(
+                x.reshape(x.size(0), -1)
+            ).view(x.size(0), x.size(1), -1)
+        elif embedding_type == "graph":
             self.embedding = SemGraphConv(n_features[0], d_model, adj)
             self.embedding_forward = lambda x: self.embedding(x)
         else:
             raise NotImplementedError
-        
+
         # Positional encoding.
         if self.spatial_encoding:
-            self.position_enc = nn.Parameter(torch.zeros(1, num_joints_in, d_model)) 
+            self.position_enc = nn.Parameter(torch.zeros(1, num_joints_in, d_model))
         self.dropout = nn.Dropout(p=encoder_dropout)
 
         # Stacked encoders.
-        self.layer_stack = nn.ModuleList([
-            EncoderLayer(d_model, d_inner, n_head, d_k, d_v, dropout=encoder_dropout)
-            for _ in range(n_layers)])
+        self.layer_stack = nn.ModuleList(
+            [
+                EncoderLayer(
+                    d_model, d_inner, n_head, d_k, d_v, dropout=encoder_dropout
+                )
+                for _ in range(n_layers)
+            ]
+        )
         self.layer_norm = nn.LayerNorm(d_model, eps=1e-6)
 
         # Output prediction layers.
         if self.intermediate:
-            self.intermediate_pred = nn.ModuleList([nn.Sequential(nn.LayerNorm(num_joints_in * d_model), nn.Dropout(p=pred_dropout), nn.Linear(num_joints_in * d_model, num_joints_in * n_features[1])) for _ in range(n_layers)])
-            self.intermediate_enc = nn.ModuleList([nn.Linear(num_joints_in * n_features[1], num_joints_in * d_model) for _ in range(n_layers)])
+            self.intermediate_pred = nn.ModuleList(
+                [
+                    nn.Sequential(
+                        nn.LayerNorm(num_joints_in * d_model),
+                        nn.Dropout(p=pred_dropout),
+                        nn.Linear(
+                            num_joints_in * d_model, num_joints_in * n_features[1]
+                        ),
+                    )
+                    for _ in range(n_layers)
+                ]
+            )
+            self.intermediate_enc = nn.ModuleList(
+                [
+                    nn.Linear(num_joints_in * n_features[1], num_joints_in * d_model)
+                    for _ in range(n_layers)
+                ]
+            )
             if self.error_prediction:
-                self.intermediate_error = nn.ModuleList([nn.Sequential(nn.LayerNorm(num_joints_in * d_model), nn.Dropout(p=pred_dropout), nn.Linear(num_joints_in * d_model, num_joints_in * n_features[1])) for _ in range(n_layers)])
+                self.intermediate_error = nn.ModuleList(
+                    [
+                        nn.Sequential(
+                            nn.LayerNorm(num_joints_in * d_model),
+                            nn.Dropout(p=pred_dropout),
+                            nn.Linear(
+                                num_joints_in * d_model, num_joints_in * n_features[1]
+                            ),
+                        )
+                        for _ in range(n_layers)
+                    ]
+                )
         else:
             self.decoder = nn.Sequential(
                 nn.LayerNorm(num_joints_in * d_model),
-                nn.Dropout(p=pred_dropout),                        
-                nn.Linear(num_joints_in * d_model, num_joints_in * n_features[1])
+                nn.Dropout(p=pred_dropout),
+                nn.Linear(num_joints_in * d_model, num_joints_in * n_features[1]),
             )
             if self.error_prediction:
                 self.error_decoder = nn.Sequential(
                     nn.LayerNorm(num_joints_in * d_model),
                     nn.Dropout(p=pred_dropout),
-                    nn.Linear(num_joints_in * d_model, num_joints_in * n_features[1])
+                    nn.Linear(num_joints_in * d_model, num_joints_in * n_features[1]),
                 )
 
         # Initialize layers with xavier.
         for p in self.parameters():
             if p.dim() > 1:
-                nn.init.xavier_uniform_(p) 
+                nn.init.xavier_uniform_(p)
 
-    def forward(self, src: torch.Tensor, image: torch.Tensor=None, return_attns: bool=False) -> Tuple[Union[List[torch.Tensor], torch.Tensor], torch.Tensor, Union[List[torch.Tensor], torch.Tensor], List[torch.Tensor]]:
+    def forward(
+        self, src: torch.Tensor, image: torch.Tensor = None, return_attns: bool = False
+    ) -> Tuple[
+        Union[List[torch.Tensor], torch.Tensor],
+        torch.Tensor,
+        Union[List[torch.Tensor], torch.Tensor],
+        List[torch.Tensor],
+    ]:
         """
         Forward pass through the network. Input is a sequence of 2D joints belonging to one pose.
-        
+
         Parameters
         ----------
         src: torch.Tensor
@@ -281,18 +382,18 @@ class JointTransformer(nn.Module):
             Optional attention maps for every transformer encoder in the stack.
         """
 
-        b, j, _ = src.shape  # Batch, Number of joints, Number of features per joint
+        b, j, _ = shape  # Batch, Number of joints, Number of features per joint
         intermediate_list = []
         error_list = []
         enc_slf_attn_list = []
 
         # Expand dimensions.
         src = self.embedding_forward(src)
-        
+
         # Positional encoding.
         if self.spatial_encoding:
             src += self.position_enc
- 
+
         enc_output = self.dropout(src)
         enc_output = self.layer_norm(enc_output)
 
@@ -319,9 +420,13 @@ class JointTransformer(nn.Module):
         if self.intermediate:
             out = [out.view(b, j, -1) for out in intermediate_list]
             error = [e.view(b, j, -1) for e in error_list]
-        else:  
+        else:
             out = self.decoder(enc_output.view(b, -1)).view(b, j, -1)
-            error = self.error_decoder(enc_output.view(b, -1)).view(b, j, -1) if self.error_prediction else None
+            error = (
+                self.error_decoder(enc_output.view(b, -1)).view(b, j, -1)
+                if self.error_prediction
+                else None
+            )
 
         if return_attns:
             return out, enc_output, error, enc_slf_attn_list

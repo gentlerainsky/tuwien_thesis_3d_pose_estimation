@@ -17,7 +17,7 @@ class Evaluator:
         self.mpjpe = []
         self.activities_mpjpe = {}
 
-    def calculate_mpjpe(self, pred_3d, gt_3d):
+    def calculate_mpjpe(self, pred_3d, gt_3d, valid):
         pjpe_list = []
         mpjpe_list = []
         pred_3d = pred_3d.reshape(pred_3d.shape[0], -1, 3)
@@ -25,6 +25,7 @@ class Evaluator:
         # Loop over each sample in a batch
         for i in range(gt_3d.shape[0]):
             mask = (gt_3d[i] != 0)
+            mask = np.tile(valid[i].reshape([-1, 1]), (1, 3))
             pjpe = np.sqrt(
                 np.power((pred_3d[i] - gt_3d[i]), 2).sum(axis=1, where=mask)
             )
@@ -34,8 +35,8 @@ class Evaluator:
             mpjpe_list.append(mpjpe)
         return pjpe_list, mpjpe_list
 
-    def add_result(self, pred_3d, gt_3d, input_activities=None):
-        pjpe_list, mpjpe_list = self.calculate_mpjpe(pred_3d, gt_3d)
+    def add_result(self, pred_3d, gt_3d, valid, input_activities=None):
+        pjpe_list, mpjpe_list = self.calculate_mpjpe(pred_3d, gt_3d, valid)
         self.pjpe += pjpe_list
         self.mpjpe += mpjpe_list
         # calculate action-based mpjpe
@@ -45,7 +46,7 @@ class Evaluator:
                 mask = np.array(input_activities == activity)
                 if np.all(~mask):
                     continue
-                _, activities_mpjpe = self.calculate_mpjpe(pred_3d[mask], gt_3d[mask])
+                _, activities_mpjpe = self.calculate_mpjpe(pred_3d[mask], gt_3d[mask], valid)
                 if activity not in self.activities_mpjpe:
                     self.activities_mpjpe[activity] = []
                 self.activities_mpjpe[activity] += activities_mpjpe

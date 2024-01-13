@@ -43,6 +43,13 @@ class GroundTruthKeypointDataset:
                 )
                 keypoints2D = np.array(annotation["keypoints"]).reshape(-1, 3)
                 keypoints3D = np.array(annotation["keypoints3D"]).reshape(-1, 3)
+                bbox = annotation['bbox']
+                bbox = [
+                    bbox[0],
+                    bbox[1],
+                    bbox[0] + bbox[2],
+                    bbox[1] + bbox[3],
+                ]
                 if self.exclude_ankle:
                     keypoints2D = keypoints2D[:-2, :]
                     keypoints3D = keypoints3D[:-2, :]
@@ -85,7 +92,8 @@ class GroundTruthKeypointDataset:
                         "valid": valid_keypoints,
                         "root_2d": root_2d,
                         "root_3d": root_3d,
-                        "scale_factor": [w, h]
+                        "scale_factor": [w, h],
+                        "bbox": bbox
                     }
                 )
             self.samples = samples

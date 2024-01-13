@@ -150,10 +150,9 @@ class Emotion3DPreprocessor:
         return image_annotation
 
 
-    def create_final_skeleton_annotaions(self, nr_annotations, current_json, annotation_list):
+    def create_final_skeleton_annotaions(self, file_id, current_json, annotation_list):
         filename = current_json["img_name"]
         img_id = int((filename.split(".jpg")[0]).split("frame_")[1])
-        nr = nr_annotations
 
         skeleton_annotation = annotation_list
         for humans in current_json["humans"]:
@@ -167,7 +166,7 @@ class Emotion3DPreprocessor:
                 "image_id": img_id,
                 "bbox": self.calc_bbox(humans["full_body_bbox"]),
                 "category_id": 1,
-                "id": nr,
+                "id": file_id,
             }
             skeleton_annotation.append(temp_skeleton_annotation)
 
@@ -223,10 +222,12 @@ class Emotion3DPreprocessor:
     def calc_bbox(self, temp_bbox, gt_bbox=True):
         bbox = []
         if gt_bbox:
-            bbox.append(round(temp_bbox["x"] * self.scale_height, 2))
-            bbox.append(round(temp_bbox["y"] * self.scale_width, 2))
-            bbox.append(round(temp_bbox["width"] * self.scale_width, 2))
-            bbox.append(round(temp_bbox["height"] * self.scale_height, 2))
+            x = round(temp_bbox["x"] * self.scale_height, 2)
+            y = round(temp_bbox["y"] * self.scale_width, 2)
+            w = round(temp_bbox["width"] * self.scale_width, 2)
+            h = round(temp_bbox["height"] * self.scale_height, 2)
+            # use xyxy format for mmdet/mmpose compatibility
+            bbox = [x, y, x + w, x + h]
         else:
             bbox.append(0)
             bbox.append(0)
@@ -284,7 +285,7 @@ class Emotion3DPreprocessor:
                         self.create_final_image_annotations(filename, file_id)
                     )
                     val_info[camera_position]["annotations"] = self.create_final_skeleton_annotaions(
-                        total_image_counter, data, val_info[camera_position]["annotations"]
+                        file_id, data, val_info[camera_position]["annotations"]
                     )
                     if i == 0:
                         val_info[camera_position]["camera_parameters"] = data["camera_parameters"]
@@ -298,7 +299,7 @@ class Emotion3DPreprocessor:
                         self.create_final_image_annotations(filename, file_id)
                     )
                     test_info[camera_position]["annotations"] = self.create_final_skeleton_annotaions(
-                        total_image_counter, data, test_info[camera_position]["annotations"]
+                        file_id, data, test_info[camera_position]["annotations"]
                     )
                     if i == 0:
                         test_info[camera_position]["camera_parameters"] = data["camera_parameters"]
@@ -312,7 +313,7 @@ class Emotion3DPreprocessor:
                         self.create_final_image_annotations(filename, file_id)
                     )
                     train_info[camera_position]["annotations"] = self.create_final_skeleton_annotaions(
-                        total_image_counter, data, train_info[camera_position]["annotations"]
+                        file_id, data, train_info[camera_position]["annotations"]
                     )
                     train_counter += 1
                     if i == 0:

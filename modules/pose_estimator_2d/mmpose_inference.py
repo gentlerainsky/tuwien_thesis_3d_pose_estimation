@@ -48,9 +48,9 @@ def infer_2d_pose_estimation(
             image_results = mmpose_result['predictions'][0]
             # Get the highest score bbox
             image_results = list(image_results)
-            pose_confidence = [np.average(item['keypoint_scores']) for item in image_results]
-            best_box_idx = np.argmax(pose_confidence)
-
+            # pose_confidence = [np.average(item['keypoint_scores']) for item in image_results]
+            # best_box_idx = np.argmax(pose_confidence)
+            best_box_idx = np.argmax([box['bbox_score'] for box in image_results])
             count += 1
             if (count + 1) % 500 == 0:
                 print(

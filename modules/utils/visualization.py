@@ -125,14 +125,13 @@ def plot_images(
         y_offset = root_2d[1]
         width, height = scale_factor
         axes[idx].scatter(
-            gt_kp_2d[:, 0] * height + x_offset,
-            gt_kp_2d[:, 1] * width + y_offset,
+            gt_kp_2d[:, 0] * width + x_offset,
+            gt_kp_2d[:, 1] * height + y_offset,
             c=colors,
             marker='o',
             alpha=.7,
         )
         axes[idx].imshow(plt.imread(img_path))
-        # draw highest match bbox as green
         x, y, x2, y2 = bbox
         w, h = x2 - x, y2 - y
         rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='g', facecolor='none', label='high bbox')
