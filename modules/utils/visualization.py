@@ -120,7 +120,10 @@ def plot_images(
     else:
         fig, ax = plt.subplots(figsize=figsize)
         axes = [ax]
-    for idx, (gt_kp_2d, img_id, img_path, root_2d, scale_factor, bbox) in enumerate(zip(gt_kp_2d_list, img_ids, img_paths, root_2d_list, scale_factor_list, bbox_list)):
+
+    for idx, (gt_kp_2d, img_id, img_path, root_2d, scale_factor, bbox) in enumerate(
+            zip(gt_kp_2d_list, img_ids, img_paths, root_2d_list, scale_factor_list, bbox_list)
+        ):
         x_offset = root_2d[0]
         y_offset = root_2d[1]
         width, height = scale_factor
@@ -130,6 +133,10 @@ def plot_images(
             c=colors,
             marker='o',
             alpha=.7,
+        )
+        axes[idx].plot(
+            gt_kp_2d[5:7, 0] * width + x_offset,
+            gt_kp_2d[5:7, 1] * height + y_offset,
         )
         axes[idx].imshow(plt.imread(img_path))
         x, y, x2, y2 = bbox

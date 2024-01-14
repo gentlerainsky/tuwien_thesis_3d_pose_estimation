@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import json
 import numpy as np
+from modules.lifter_2d_3d.utils.rotation import rotate2D_to_x_axis, rotate3D_to_x_axis
 
 
 class DriveAndActKeypointDataset:
@@ -19,6 +20,7 @@ class DriveAndActKeypointDataset:
         is_center_to_neck=False,
         is_normalize_to_bbox=False,
         is_normalize_to_pose=False,
+        is_normalize_rotation=None,
         bbox_format='xywh'
     ):
         self.annotation_file = annotation_file
@@ -34,6 +36,7 @@ class DriveAndActKeypointDataset:
         if (is_normalize_to_pose and is_normalize_to_bbox):
             raise ValueError(f'is_normalize_to_pose and is_normalize_to_bbox cannot be both true.')
         self.bbox_format = bbox_format
+        self.is_normalize_rotation = is_normalize_rotation
         self.actors = set(actors)
         self.activities = set([])
         self.raw_data = []
@@ -115,8 +118,15 @@ class DriveAndActKeypointDataset:
                     root_2d = (keypoints2D[5, :2] + keypoints2D[6, :2]) / 2
                     keypoints2D[:, :2] = keypoints2D[:, :2] - root_2d
 
-                    root_3d = (keypoints3D[5, :] + keypoints3D[6, :]) / 2
+                    root_3d = (keypoints3D[5] + keypoints3D[6]) / 2
                     keypoints3D = keypoints3D - root_3d
+
+                if self.is_normalize_rotation:
+                    # x, y = keypoints2D[5, 0], keypoints2D[5, 1]
+                    # rad = np.arctan2(y, x)
+                    keypoints2D[:, :2] = rotate2D_to_x_axis(keypoints2D[5:7, :2], keypoints2D[:, :2])
+                    keypoints3D = rotate3D_to_x_axis(keypoints3D[5:7], keypoints3D)
+
                 keypoints2D[:, 0] = keypoints2D[:, 0] / w
                 keypoints2D[:, 1] = keypoints2D[:, 1] / h
                 
