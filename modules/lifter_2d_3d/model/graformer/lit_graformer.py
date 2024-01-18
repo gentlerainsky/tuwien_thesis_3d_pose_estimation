@@ -95,6 +95,8 @@ class LitGraformer(pl.LightningModule):
         self.register_buffer("src_mask", torch.tensor([[[True] * num_pts]]))
         self.learning_rate = learning_rate
         self.val_loss_log = []
+        self.val_history = []
+        self.test_history = []
         self.val_print_count = 0
         self.train_loss_log = []
         self.test_loss_log = []
@@ -112,7 +114,11 @@ class LitGraformer(pl.LightningModule):
         x = x.float()
         y = y.float()
         y_hat = self.model(x, self.src_mask).squeeze()
-        loss = F.mse_loss(y_hat, y, reduction="none")
+        loss = F.mse_loss(
+            y_hat.reshape(y_hat.shape[0], -1, 3),
+            y.reshape(y.shape[0], -1, 3),
+            reduction="none",
+        )
         # mask out invalid batch
         loss = loss.sum(axis=2) * (valid).float()
         # Mean square error
@@ -123,6 +129,7 @@ class LitGraformer(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         x = batch["keypoints_2d"]
         y = batch["keypoints_3d"]
+        valid = batch["valid"]
         activities = None
         if "activities" in batch:
             activities = batch["activities"]
@@ -130,7 +137,10 @@ class LitGraformer(pl.LightningModule):
         y = y.float()
         y_hat = self.model(x, self.src_mask).squeeze()
         self.evaluator.add_result(
-            y_hat.detach().cpu().numpy(), y.detach().cpu().numpy(), activities
+            y_hat.detach().cpu().numpy(),
+            y.detach().cpu().numpy(),
+            valid.detach().cpu().numpy(),
+            activities
         )
         # loss = F.mse_loss(y_hat, y)
         # self.val_loss_log.append(torch.sqrt(loss).item())
@@ -139,6 +149,7 @@ class LitGraformer(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         x = batch["keypoints_2d"]
         y = batch["keypoints_3d"]
+        valid = batch["valid"]
         activities = None
         if "activities" in batch:
             activities = batch["activities"]
@@ -146,7 +157,10 @@ class LitGraformer(pl.LightningModule):
         y = y.float()
         y_hat = self.model(x, self.src_mask).squeeze()
         self.evaluator.add_result(
-            y_hat.detach().cpu().numpy(), y.detach().cpu().numpy(), activities
+            y_hat.detach().cpu().numpy(),
+            y.detach().cpu().numpy(),
+            valid.detach().cpu().numpy(),
+            activities
         )
         # loss = F.mse_loss(y_hat, y)
         # self.test_loss_log.append(torch.sqrt(loss).item())
@@ -162,17 +176,34 @@ class LitGraformer(pl.LightningModule):
         # self.train_loss_log = []
         # self.val_print_count += 1
         # self.val_loss_log = []
+        # print(f"check #{self.val_print_count}")
+        # if len(self.train_loss_log) > 0:
+        #     print(
+        #         f"training loss from {len(self.train_loss_log)} batches: {np.mean(self.train_loss_log) * 1000}"
+        #     )
+        # pjpe, mpjpe, activities_mpjpe = self.evaluator.get_result()
+        # print(f"val MPJPE from: {len(self.val_loss_log)} batches : {mpjpe}")
+        # self.log("val_loss", mpjpe)
+        # self.train_loss_log = []
+        # self.val_print_count += 1
+        # self.evaluator.reset()
+
         print(f"check #{self.val_print_count}")
         if len(self.train_loss_log) > 0:
             print(
                 f"training loss from {len(self.train_loss_log)} batches: {np.mean(self.train_loss_log) * 1000}"
             )
         pjpe, mpjpe, activities_mpjpe = self.evaluator.get_result()
-        print(f"val MPJPE from: {len(self.val_loss_log)} batches : {mpjpe}")
+        # if not self.is_silence:
+        print(f"val MPJPE from: {len(self.evaluator.mpjpe)} samples : {mpjpe}")
         self.log("val_loss", mpjpe)
         self.train_loss_log = []
         self.val_print_count += 1
         self.evaluator.reset()
+        self.val_history.append(
+            {"pjpe": pjpe, "mpjpe": mpjpe, "activities_mpjpe": activities_mpjpe}
+        )
+
 
     def on_test_epoch_end(self):
         # test_loss = np.mean(self.test_loss_log)
@@ -184,6 +215,9 @@ class LitGraformer(pl.LightningModule):
         print(f"activities_mpjpe:\n{activities_mpjpe}")
         self.log("mpjpe", mpjpe)
         print(f"test mpjpe: {mpjpe}")
+        self.test_history.append(
+            {"pjpe": pjpe, "mpjpe": mpjpe, "activities_mpjpe": activities_mpjpe}
+        )
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)

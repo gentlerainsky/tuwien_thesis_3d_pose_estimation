@@ -17,7 +17,7 @@ class BaseDataset:
         bbox_file,
         image_width,
         image_height,
-        actors,
+        actors=None,
         exclude_ankle=False,
         exclude_knee=False,
         is_center_to_neck=False,
@@ -43,7 +43,9 @@ class BaseDataset:
             )
         self.bbox_format = bbox_format
         self.is_normalize_rotation = is_normalize_rotation
-        self.actors = set(actors)
+        self.actors = actors
+        if actors is not None:
+            self.actors = set(self.actors)
         self.activities = set([])
         self.raw_data = []
         self.preprocess()
@@ -69,7 +71,9 @@ class BaseDataset:
             data = json.loads(f.read())
             metadata = data['categories'][0]
             camera_parameters = data['camera_parameters']
-            images = [img for img in data["images"] if img["actor"] in self.actors]
+            images = data["images"]
+            if self.actors is not None:
+                images = [img for img in data["images"] if img["actor"] in self.actors]
             image_annotation_info = {item["id"]: item for item in data["annotations"]}
         return {
             'metadata': metadata,
@@ -87,7 +91,7 @@ class BaseDataset:
             pose_3d = pose_3d[:-2]
         # Drive & Act dataset specify unannotated joints
         # with a zero vector
-        valid_keypoints = pose_3d.sum(axis=1) != 0
+        valid_keypoints = (pose_3d.sum(axis=1) != 0)
         return pose_3d, pose_3d, valid_keypoints
 
     def preprocess(self):
@@ -130,50 +134,55 @@ class BaseDataset:
             h = self.image_height
 
             if self.is_normalize_to_bbox:
-                keypoints2D, w, h = normalize_2d_pose_to_bbox(
-                    keypoints2D, bbox, self.bbox_format
+                pose_2d, w, h = normalize_2d_pose_to_bbox(
+                    pose_2d, bbox, self.bbox_format
                 )
             elif self.is_normalize_to_pose:
-                keypoints2D, w, h = normalize_2d_pose_to_pose(keypoints2D)
+                pose_2d, w, h = normalize_2d_pose_to_pose(pose_2d)
             else:
-                keypoints2D, w, h = normalize_2d_pose_to_image(
-                    keypoints2D, self.image_width, self.image_height
+                pose_2d, w, h = normalize_2d_pose_to_image(
+                    pose_2d, self.image_width, self.image_height
                 )
             if self.is_center_to_neck:
-                keypoints2D, root_2d = center_pose2d_to_neck(keypoints2D)
-                keypoints3D, root_3d = center_pose3d_to_neck(keypoints3D)
+                pose_2d, root_2d = center_pose2d_to_neck(pose_2d)
+                pose_3d, root_3d = center_pose3d_to_neck(pose_3d)
             if self.is_normalize_rotation:
-                keypoints2D, keypoints3D = normalize_rotation(keypoints2D, keypoints3D)
+                pose_2d, pose_3d = normalize_rotation(pose_2d, pose_3d)
 
-            self.samples.append(
-                {
-                    "id": image_info["id"],
-                    "array_idx": idx,
-                    "filenames": image_info["file_name"],
-                    "frame_id": image_info["frame_id"],
-                    "actor": image_info["actor"],
-                    "activity": image_info["activity"],
-                    "keypoints2D": keypoints2D,
-                    "keypoints3D": keypoints3D,
-                    "valid": valid_kp,
-                    "root_2d": root_2d,
-                    "root_3d": root_3d,
-                    "scale_factor": [w, h],
-                    "bbox": bbox
-                }
-            )
-            self.activities.add(image_info["activity"])
+            item = {
+                "id": image_info["id"],
+                "array_idx": idx,
+                "filenames": image_info["file_name"],
+                "frame_id": image_info.get("frame_id", None),
+                "actor": image_info.get("actor", None),
+                "activity": image_info.get("activity", None),
+                "pose_2d": pose_2d,
+                "pose_3d": pose_3d,
+                "valid": valid_kp,
+                "root_2d": root_2d,
+                "root_3d": root_3d,
+                "scale_factor": [w, h],
+                "bbox": bbox
+            }
+            self.samples.append(item)
+            if 'activity' in image_info:
+                self.activities.add(image_info["activity"])
 
     def __len__(self):
         return len(self.samples)
     
     def __getitem__(self, idx) -> dict:
         sample = self.samples[idx]
-        return dict(
+        item = dict(
             img_id=sample["id"],
             arr_id=sample["array_idx"],
-            keypoints_2d=sample["keypoints2D"][:, :2],
-            keypoints_3d=sample["keypoints3D"],
-            valid=sample["valid"],
-            activities=sample["activity"],
+            keypoints_2d=sample["pose_2d"][:, :2],
+            keypoints_3d=sample["pose_3d"],
+            # valid=sample["valid"],
+            # activities=sample["activity"],
         )
+        if sample['valid'] is not None:
+            item['valid'] = sample['valid']
+        if sample['activity'] is not None:
+            item['activities'] = sample['activity']
+        return item

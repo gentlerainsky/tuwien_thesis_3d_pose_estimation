@@ -131,14 +131,19 @@ class LitSemGCN(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         x = batch["keypoints_2d"]
         y = batch["keypoints_3d"]
+        valid = batch["valid"]
         activities = None
         if "activities" in batch:
             activities = batch["activities"]
         x = x.float().squeeze(2).to(self.device)
         y = y.float().squeeze(2).to(self.device)
+        valid = valid.to(self.device)
         y_hat = self.model(x)
         self.evaluator.add_result(
-            y_hat.detach().cpu().numpy(), y.detach().cpu().numpy(), activities
+            y_hat.detach().cpu().numpy(),
+            y.detach().cpu().numpy(),
+            valid.detach().cpu().numpy(),
+            activities
         )
         # loss = F.mse_loss(y_hat, y)
         # self.val_loss_log.append(torch.sqrt(loss).item())
@@ -147,15 +152,20 @@ class LitSemGCN(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         x = batch["keypoints_2d"]
         y = batch["keypoints_3d"]
+        valid = batch["valid"]
         activities = None
         if "activities" in batch:
             activities = batch["activities"]
 
         x = x.float().squeeze(2).to(self.device)
         y = y.float().squeeze(2).to(self.device)
+        valid = valid.to(self.device)
         y_hat = self.model(x)
         self.evaluator.add_result(
-            y_hat.detach().cpu().numpy(), y.detach().cpu().numpy(), activities
+            y_hat.detach().cpu().numpy(),
+            y.detach().cpu().numpy(),
+            valid.detach().cpu().numpy(),
+            activities
         )
         # loss = F.mse_loss(y_hat, y)
         # self.test_loss_log.append(torch.sqrt(loss).item())

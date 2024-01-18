@@ -30,6 +30,9 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         self.evaluator = Evaluator(all_activities=all_activities)
         self.is_silence = is_silence
 
+    def set_all_activities(self, all_activities):
+        self.evaluator = Evaluator(all_activities=all_activities)
+
     def forward(self, x):
         # use forward for inference/predictions
         y_hat = self.model(x)
@@ -42,8 +45,6 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         x = torch.flatten(x, start_dim=1).float().to(self.device)
         y = torch.flatten(y, start_dim=1).float().to(self.device)
         y_hat = self.model(x)
-        # y_hat.shape => batch x flatten(keypoinys_3d)
-        # TODO: Fix the calculation to consider only "valid"
         loss = F.mse_loss(
             y_hat.reshape(y_hat.shape[0], -1, 3),
             y.reshape(y.shape[0], -1, 3),
@@ -99,10 +100,12 @@ class LitSimpleBaselineLinear(pl.LightningModule):
             print(
                 f"training loss from {len(self.train_loss_log)} batches: {np.mean(self.train_loss_log) * 1000}"
             )
-        pjpe, mpjpe, activities_mpjpe = self.evaluator.get_result()
+        pjpe, mpjpe, activities_mpjpe, activity_macro_mpjpe = self.evaluator.get_result()
         # if not self.is_silence:
         print(f"val MPJPE from: {len(self.evaluator.mpjpe)} samples : {mpjpe}")
+        print("activity_macro_mpjpe", activity_macro_mpjpe)
         self.log("val_loss", mpjpe)
+        self.log('activity_macro_mpjpe', activity_macro_mpjpe)
         self.train_loss_log = []
         self.val_print_count += 1
         self.evaluator.reset()
@@ -111,15 +114,21 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         )
 
     def on_test_epoch_end(self):
-        pjpe, mpjpe, activities_mpjpe = self.evaluator.get_result()
+        pjpe, mpjpe, activities_mpjpe, activity_macro_mpjpe = self.evaluator.get_result()
         if not self.is_silence:
             print("MPJPE:", mpjpe)
             print(f"PJPE\n{pjpe}")
             print(f"activities_mpjpe:\n{activities_mpjpe}")
             print(f"test mpjpe: {mpjpe}")
         self.log("mpjpe", mpjpe)
+        print("activity_macro_mpjpe", activity_macro_mpjpe)
         self.test_history.append(
-            {"pjpe": pjpe, "mpjpe": mpjpe, "activities_mpjpe": activities_mpjpe}
+            {
+                "pjpe": pjpe,
+                "mpjpe": mpjpe,
+                "activities_mpjpe": activities_mpjpe,
+                "activity_macro_mpjpe": activity_macro_mpjpe
+            }
         )
 
     # def configure_optimizers(self):

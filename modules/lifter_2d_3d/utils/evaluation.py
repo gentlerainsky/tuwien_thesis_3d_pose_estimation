@@ -11,6 +11,7 @@ class Evaluator:
         self.pjpe = []
         self.mpjpe = []
         self.activities_mpjpe = {}
+        self.activity_macro_mpjpe = []
 
     def reset(self):
         self.pjpe = []
@@ -42,14 +43,18 @@ class Evaluator:
         # calculate action-based mpjpe
         if self.all_activities is not None:
             input_activities = np.array(input_activities)
+            activities_mpjpe = []
             for activity in self.all_activities:
                 mask = np.array(input_activities == activity)
                 if np.all(~mask):
                     continue
-                _, activities_mpjpe = self.calculate_mpjpe(pred_3d[mask], gt_3d[mask], valid)
+                _, mpjpe = self.calculate_mpjpe(pred_3d[mask], gt_3d[mask], valid)
                 if activity not in self.activities_mpjpe:
                     self.activities_mpjpe[activity] = []
-                self.activities_mpjpe[activity] += activities_mpjpe
+                self.activities_mpjpe[activity] += mpjpe
+                activities_mpjpe += mpjpe
+            # macro average of activities mpjpe
+            self.activity_macro_mpjpe += [np.mean(activities_mpjpe)]
 
     def get_result(self):
         mpjpe = np.nanmean(np.array(self.mpjpe)) * 1000
@@ -59,8 +64,9 @@ class Evaluator:
             index=coco_keypoint_names[:pjpe_data.shape[0]],
             columns=['PJPE']
         )
+        activity_macro_mpjpe = np.mean(self.activity_macro_mpjpe) * 1000
         activities_mpjpe = {}
         if self.all_activities is not None:
             for activity in self.activities_mpjpe.keys():
                 activities_mpjpe[activity] = np.array(self.activities_mpjpe[activity]).mean() * 1000
-        return pjpe, mpjpe, activities_mpjpe
+        return pjpe, mpjpe, activities_mpjpe, activity_macro_mpjpe

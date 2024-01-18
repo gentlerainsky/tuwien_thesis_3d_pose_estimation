@@ -1,9 +1,10 @@
+from typing import List
 import torch
 import os
 import pandas as pd
 import json
 import numpy as np
-from modules.lifter_2d_3d.utils.rotation import rotate2D_to_x_axis, rotate3D_to_x_axis
+from modules.lifter_2d_3d.utils.normalization import rotate2D_to_x_axis, rotate3D_to_x_axis
 
 
 class DriveAndActKeypointDataset:
@@ -21,7 +22,8 @@ class DriveAndActKeypointDataset:
         is_normalize_to_bbox=False,
         is_normalize_to_pose=False,
         is_normalize_rotation=None,
-        bbox_format='xywh'
+        bbox_format='xywh',
+        remove_activities=[]
     ):
         self.annotation_file = annotation_file
         self.prediction_file = prediction_file
@@ -39,6 +41,8 @@ class DriveAndActKeypointDataset:
         self.is_normalize_rotation = is_normalize_rotation
         self.actors = set(actors)
         self.activities = set([])
+        self.image_activities = []
+        self.remove_activities = remove_activities
         self.raw_data = []
         self.init()
 
@@ -62,6 +66,8 @@ class DriveAndActKeypointDataset:
             annotations = {item["id"]: item for item in data["annotations"]}
             samples = []
             for idx, image in enumerate(images):
+                if image['activity'] in self.remove_activities:
+                    continue
                 annotation = annotations[image["id"]]
                 self.raw_data.append(
                     {
@@ -124,8 +130,8 @@ class DriveAndActKeypointDataset:
                 if self.is_normalize_rotation:
                     # x, y = keypoints2D[5, 0], keypoints2D[5, 1]
                     # rad = np.arctan2(y, x)
-                    keypoints2D[:, :2] = rotate2D_to_x_axis(keypoints2D[5:7, :2], keypoints2D[:, :2])
-                    keypoints3D = rotate3D_to_x_axis(keypoints3D[5:7], keypoints3D)
+                    keypoints2D[:, :2], _ = rotate2D_to_x_axis(keypoints2D[5:7, :2], keypoints2D[:, :2])
+                    keypoints3D, _, _ = rotate3D_to_x_axis(keypoints3D[5:7], keypoints3D)
 
                 keypoints2D[:, 0] = keypoints2D[:, 0] / w
                 keypoints2D[:, 1] = keypoints2D[:, 1] / h
@@ -150,8 +156,27 @@ class DriveAndActKeypointDataset:
                         "bbox": bbox
                     }
                 )
-                self.activities.add(image["activity"])
+                self.activities.add(image['activity'])
+                self.image_activities.append(image['activity'])
+            self.sample_weight = self.make_weights_for_balanced_classes(self.image_activities, self.activities)
             self.samples = samples
+
+    # modified from: https://gist.github.com/srikarplus/15d7263ae2c82e82fe194fc94321f34e
+    def make_weights_for_balanced_classes(self, image_activies: List[str], activity_types: set[str]):
+        activity_list = list(activity_types)
+        activity_to_id = {activity: idx for idx, activity in enumerate(activity_list)}
+        # id_to_activity = {idx: activity for idx, activity in enumerate(activity_list)}
+        count = [0] * len(activity_types)
+        for activity in image_activies:
+            count[activity_to_id[activity]] += 1
+        weight_per_class = [0.0] * len(activity_list)
+        N = float(sum(count))
+        for i in range(len(activity_list)):
+            weight_per_class[i] = (N / float(count[i]))
+        weight = [0] * len(image_activies)
+        for idx, activity in enumerate(image_activies):
+            weight[idx] = weight_per_class[activity_to_id[activity]]
+        return weight
 
     def __len__(self):
         return len(self.samples)
