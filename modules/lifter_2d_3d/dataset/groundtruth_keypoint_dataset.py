@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import json
 import numpy as np
+from modules.lifter_2d_3d.utils.normalization import rotate2D_to_x_axis, rotate3D_to_x_axis
 
 
 class GroundTruthKeypointDataset:
@@ -13,16 +14,28 @@ class GroundTruthKeypointDataset:
         image_height,
         exclude_ankle=False,
         exclude_knee=False,
+        is_center_to_neck=False,
         is_normalize_to_bbox=False,
-        bbox_format='xywh'
+        is_normalize_to_pose=False,
+        is_normalize_rotation=None,
+        bbox_format='xywh',
+        remove_activities=[]
     ):
         self.annotation_file = annotation_file
         self.image_width = image_width
         self.image_height = image_height
         self.exclude_ankle = exclude_ankle
         self.exclude_knee = exclude_knee
+        self.is_center_to_neck = is_center_to_neck
         self.is_normalize_to_bbox = is_normalize_to_bbox
+        self.is_normalize_to_pose = is_normalize_to_pose
+        if (is_normalize_to_pose and is_normalize_to_bbox):
+            raise ValueError(f'is_normalize_to_pose and is_normalize_to_bbox cannot be both true.')
         self.bbox_format = bbox_format
+        self.is_normalize_rotation = is_normalize_rotation
+        self.activities = set([])
+        self.image_activities = []
+        self.remove_activities = remove_activities
         self.raw_data = []
         self.init()
 
@@ -60,15 +73,9 @@ class GroundTruthKeypointDataset:
                 bbox = annotation["bbox"]
                 root_2d = np.array([0, 0])
                 root_3d = np.array([0, 0, 0])
+                w = self.image_width
+                h = self.image_height
                 if self.is_normalize_to_bbox:
-                    # center
-                    # use neck as the root. Neck is defined as the center of left/right shoulder
-                    root_2d = (keypoints2D[5, :2] + keypoints2D[6, :2]) / 2
-                    keypoints2D[:, :2] = keypoints2D[:, :2] - root_2d
-
-                    root_3d = (keypoints3D[5, :] + keypoints3D[6, :]) / 2
-                    keypoints3D = keypoints3D - root_3d
-
                     # scale by the bounding box
                     # note that 3D keypoints is usually already scaled.
                     x, y, w, h = bbox
@@ -76,12 +83,32 @@ class GroundTruthKeypointDataset:
                         x, y, x2, y2 = bbox
                         w = x2 - x
                         h = y2 - y
-                else:
-                    # scale by the image resolution
-                    w = self.image_width
-                    h = self.image_height
-                keypoints2D[:, 0] = keypoints2D[:, 0] / w
-                keypoints2D[:, 1] = keypoints2D[:, 1] / h
+                if self.is_normalize_to_pose:
+                    # scale by the max-min position of 2D poses
+                    x_max, y_max = np.max(keypoints2D[:, :2], axis=0)
+                    x_min, y_min = np.min(keypoints2D[:, :2], axis=0)
+                    # max_length = np.max([x_max - x_min, y_max - y_min])
+                    w = x_max - x_min
+                    h = y_max - y_min
+                    # w = max_length
+                    # h = max_length
+                    bbox = [x_min, y_min, x_max, y_max]
+                
+                if self.is_center_to_neck:
+                    # center
+                    # use neck as the root. Neck is defined as the center of left/right shoulder
+                    root_2d = (keypoints2D[5, :2] + keypoints2D[6, :2]) / 2
+                    keypoints2D[:, :2] = keypoints2D[:, :2] - root_2d
+
+                    root_3d = (keypoints3D[5] + keypoints3D[6]) / 2
+                    keypoints3D = keypoints3D - root_3d
+
+                if self.is_normalize_rotation:
+                    # x, y = keypoints2D[5, 0], keypoints2D[5, 1]
+                    # rad = np.arctan2(y, x)
+                    keypoints2D[:, :2], _ = rotate2D_to_x_axis(keypoints2D[5:7, :2], keypoints2D[:, :2])
+                    keypoints3D, _, _ = rotate3D_to_x_axis(keypoints3D[5:7], keypoints3D)
+
                 valid_keypoints = keypoints3D.sum(axis=1) != 0
                 samples.append(
                     {
