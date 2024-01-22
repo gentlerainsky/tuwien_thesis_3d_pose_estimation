@@ -24,7 +24,8 @@ class BaseDataset:
         is_normalize_to_bbox=False,
         is_normalize_to_pose=False,
         is_normalize_rotation=None,
-        bbox_format='xywh'
+        bbox_format='xywh',
+        remove_activities=None
     ):
         self.annotation_file = annotation_file
         self.prediction_file = prediction_file
@@ -48,6 +49,9 @@ class BaseDataset:
             self.actors = set(self.actors)
         self.activities = set([])
         self.raw_data = []
+        self.remove_activities = remove_activities
+        if remove_activities is None:
+            self.remove_activities = []
         self.preprocess()
 
     def read_prediction_file(self):
@@ -104,7 +108,11 @@ class BaseDataset:
         images = annotation_info['images']
         image_ann_info = annotation_info['image_annotation_info']
         self.samples = []
-        
+        if len(self.remove_activities) > 0:
+            images = filter(
+                lambda x: x['activity'] not in self.remove_activities,
+                images
+            )
         for idx, image_info in enumerate(images):
             ann_info = image_ann_info[image_info["id"]]
             if ann_info["id"] not in predictions:

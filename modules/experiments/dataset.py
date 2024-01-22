@@ -1,5 +1,5 @@
 from torch.utils.data import DataLoader, sampler
-from modules.lifter_2d_3d.dataset.drive_and_act_keypoint_dataset import DriveAndActKeypointDataset
+from modules.lifter_2d_3d.dataset.base_dataset import BaseDataset
 from pathlib import Path
 
 # common setting
@@ -29,7 +29,7 @@ def construct_drive_and_act_dataset(
         test_actors=['vp11', 'vp12', 'vp13', 'vp14'],
         batch_size=batch_size,
 ):
-    train_dataset = DriveAndActKeypointDataset(
+    train_dataset = BaseDataset(
         prediction_file=(keypoint_2d_path / 'keypoint_detection_train.json').as_posix(),
         annotation_file=(keypoint_3d_path / 'person_keypoints_train.json').as_posix(),
         bbox_file=(bbox_file / 'human_detection_train.json').as_posix(),
@@ -77,7 +77,7 @@ def construct_drive_and_act_dataset(
             # 'putting_laptop_into_backpack'
         ]
     )
-    val_dataset = DriveAndActKeypointDataset(
+    val_dataset = BaseDataset(
         prediction_file=(keypoint_2d_path / 'keypoint_detection_train.json').as_posix(),
         annotation_file=(keypoint_3d_path / 'person_keypoints_train.json').as_posix(),
         bbox_file=(bbox_file / 'human_detection_train.json').as_posix(),
@@ -91,7 +91,7 @@ def construct_drive_and_act_dataset(
         is_normalize_to_pose=True,
         is_normalize_rotation=True
     )
-    test_dataset = DriveAndActKeypointDataset(
+    test_dataset = BaseDataset(
         prediction_file=(keypoint_2d_path / 'keypoint_detection_train.json').as_posix(),
         annotation_file=(keypoint_3d_path / 'person_keypoints_train.json').as_posix(),
         bbox_file=(bbox_file / 'human_detection_train.json').as_posix(),
@@ -116,4 +116,3 @@ def construct_drive_and_act_dataset(
         test_loader=test_loader,
         all_activities=all_activities
     )
-
