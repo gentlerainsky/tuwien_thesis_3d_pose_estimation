@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import json
 import numpy as np
+from modules.lifter_2d_3d.utils.normalization import rotate2D_to_x_axis, rotate3D_to_x_axis
 
 
 class SimpleKeypointDataset:
@@ -18,6 +19,7 @@ class SimpleKeypointDataset:
         is_center_to_neck=False,
         is_normalize_to_bbox=False,
         is_normalize_to_pose=False,
+        is_normalize_rotation=False,
         bbox_format='xywh'
     ):
         self.annotation_file = annotation_file
@@ -30,6 +32,7 @@ class SimpleKeypointDataset:
         self.is_center_to_neck = is_center_to_neck
         self.is_normalize_to_bbox = is_normalize_to_bbox
         self.is_normalize_to_pose = is_normalize_to_pose
+        self.is_normalize_rotation = is_normalize_rotation
         if (is_normalize_to_pose and is_normalize_to_bbox):
             raise ValueError(f'is_normalize_to_pose and is_normalize_to_bbox cannot be both true.')
         self.bbox_format = bbox_format
@@ -110,6 +113,13 @@ class SimpleKeypointDataset:
 
                     root_3d = (keypoints3D[5, :] + keypoints3D[6, :]) / 2
                     keypoints3D = keypoints3D - root_3d
+
+                if self.is_normalize_rotation:
+                    # x, y = keypoints2D[5, 0], keypoints2D[5, 1]
+                    # rad = np.arctan2(y, x)
+                    keypoints2D[:, :2], _ = rotate2D_to_x_axis(keypoints2D[5:7, :2], keypoints2D[:, :2])
+                    keypoints3D, _, _ = rotate3D_to_x_axis(keypoints3D[5:7], keypoints3D)
+
                 if (np.isclose(w, 0) or np.isclose(h, 0)):
                     print(annotation['id'])
                     print(data["images"][idx]["file_name"])

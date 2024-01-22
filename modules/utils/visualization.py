@@ -209,7 +209,7 @@ def plot_samples(
         data_subset,
         img_figsize,
         plot_figsize,
-        sample_idices,
+        sample_indices,
         is_plot_gt_skeleton=True
     ):
     model.eval()
@@ -223,7 +223,7 @@ def plot_samples(
     scale_factor_list = []
     bbox_list = []
     valids = []
-    for sample_idx in sample_idices:
+    for sample_idx in sample_indices:
         sample = dataloader.dataset.samples[sample_idx]
         gt_keypoints_3d = sample['keypoints3D']
         gt_keypoints_2d = sample['keypoints2D']

@@ -48,6 +48,7 @@ class GroundTruthKeypointDataset:
             for idx, annotation in enumerate(data["annotations"]):
                 self.raw_data.append(
                     {
+                        "filenames": data["images"][idx]["file_name"],
                         "keypoints2D": np.array(annotation["keypoints"]).reshape(-1, 3),
                         "keypoints3D": np.array(annotation["keypoints3D"]).reshape(
                             -1, 3
@@ -109,6 +110,8 @@ class GroundTruthKeypointDataset:
                     keypoints2D[:, :2], _ = rotate2D_to_x_axis(keypoints2D[5:7, :2], keypoints2D[:, :2])
                     keypoints3D, _, _ = rotate3D_to_x_axis(keypoints3D[5:7], keypoints3D)
 
+                keypoints2D[:, 0] = keypoints2D[:, 0] / w
+                keypoints2D[:, 1] = keypoints2D[:, 1] / h
                 valid_keypoints = keypoints3D.sum(axis=1) != 0
                 samples.append(
                     {
