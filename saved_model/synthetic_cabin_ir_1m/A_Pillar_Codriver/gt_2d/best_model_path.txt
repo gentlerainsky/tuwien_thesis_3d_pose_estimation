@@ -1,0 +1,1 @@
+saved_model/linear_model/synthetic_cabin_ir_1m/A_Pillar_Codriver/gt_2d/lightning_logs/version_1/checkpoints/epoch=59-step=70260.ckpt
