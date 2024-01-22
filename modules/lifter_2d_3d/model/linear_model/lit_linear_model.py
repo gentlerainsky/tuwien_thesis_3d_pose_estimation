@@ -104,13 +104,17 @@ class LitSimpleBaselineLinear(pl.LightningModule):
         # if not self.is_silence:
         print(f"val MPJPE from: {len(self.evaluator.mpjpe)} samples : {mpjpe}")
         print("activity_macro_mpjpe", activity_macro_mpjpe)
-        self.log("val_loss", mpjpe)
-        self.log('activity_macro_mpjpe', activity_macro_mpjpe)
+        self.log("mpjpe", mpjpe)
+        if activity_macro_mpjpe is not None:
+            self.log('activity_macro_mpjpe', activity_macro_mpjpe)
         self.train_loss_log = []
         self.val_print_count += 1
         self.evaluator.reset()
         self.val_history.append(
-            {"pjpe": pjpe, "mpjpe": mpjpe, "activities_mpjpe": activities_mpjpe}
+            {"pjpe": pjpe,
+             "mpjpe": mpjpe,
+             "activities_mpjpe": activities_mpjpe,
+             'activity_macro_mpjpe': activity_macro_mpjpe}
         )
 
     def on_test_epoch_end(self):
@@ -121,6 +125,8 @@ class LitSimpleBaselineLinear(pl.LightningModule):
             print(f"activities_mpjpe:\n{activities_mpjpe}")
             print(f"test mpjpe: {mpjpe}")
         self.log("mpjpe", mpjpe)
+        if activity_macro_mpjpe is not None:
+            self.log('activity_macro_mpjpe', activity_macro_mpjpe)
         print("activity_macro_mpjpe", activity_macro_mpjpe)
         self.test_history.append(
             {

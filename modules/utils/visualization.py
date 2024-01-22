@@ -225,15 +225,14 @@ def plot_samples(
     valids = []
     for sample_idx in sample_indices:
         sample = dataloader.dataset.samples[sample_idx]
-        gt_keypoints_3d = sample['keypoints3D']
-        gt_keypoints_2d = sample['keypoints2D']
+        gt_keypoints_3d = sample['pose_3d']
+        gt_keypoints_2d = sample['pose_2d']
         root_2d = sample['root_2d']
         root_3d = sample['root_3d']
         bbox = sample['bbox']
-        print(bbox)
         scale_factor = sample['scale_factor']
         valid = sample['valid']
-        estimated_pose = model(torch.flatten(torch.tensor(sample['keypoints2D'][:, :2])).unsqueeze(0).float().to(model.device))
+        estimated_pose = model(torch.flatten(torch.tensor(gt_keypoints_2d[:, :2])).unsqueeze(0).float().to(model.device))
         keypoints_3d = estimated_pose[0].cpu().reshape([-1, 3]).detach().numpy()
     
         img_path = (dataset_root_path / 'images' / data_subset / sample['filenames']).as_posix()

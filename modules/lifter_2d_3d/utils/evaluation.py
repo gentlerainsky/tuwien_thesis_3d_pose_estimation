@@ -54,7 +54,8 @@ class Evaluator:
                 self.activities_mpjpe[activity] += mpjpe
                 activities_mpjpe += mpjpe
             # macro average of activities mpjpe
-            self.activity_macro_mpjpe += [np.mean(activities_mpjpe)]
+            if len(activities_mpjpe) > 0:
+                self.activity_macro_mpjpe += [np.mean(activities_mpjpe)]
 
     def get_result(self):
         mpjpe = np.nanmean(np.array(self.mpjpe)) * 1000
@@ -63,8 +64,10 @@ class Evaluator:
             data=pjpe_data,
             index=coco_keypoint_names[:pjpe_data.shape[0]],
             columns=['PJPE']
-        )
-        activity_macro_mpjpe = np.mean(self.activity_macro_mpjpe) * 1000
+        ).T.to_dict(orient='records')
+        activity_macro_mpjpe = None
+        if len(self.activity_macro_mpjpe) > 0:
+            activity_macro_mpjpe = np.mean(self.activity_macro_mpjpe) * 1000
         activities_mpjpe = {}
         if self.all_activities is not None:
             for activity in self.activities_mpjpe.keys():

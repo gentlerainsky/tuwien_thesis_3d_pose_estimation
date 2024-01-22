@@ -52,6 +52,7 @@ class BaseDataset:
         self.remove_activities = remove_activities
         if remove_activities is None:
             self.remove_activities = []
+        self.image_activities = []
         self.preprocess()
 
     def read_prediction_file(self):
@@ -175,6 +176,7 @@ class BaseDataset:
             self.samples.append(item)
             if 'activity' in image_info:
                 self.activities.add(image_info["activity"])
+                self.image_activities.append(image_info['activity'])
 
     def __len__(self):
         return len(self.samples)

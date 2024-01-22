@@ -26,7 +26,7 @@ class DriveAndActKeypointDataset(BaseDataset):
         bbox_format='xywh',
         remove_activities=[]
     ):
-        super(self).__init__(
+        super().__init__(
             annotation_file,
             prediction_file,
             bbox_file,
@@ -44,7 +44,9 @@ class DriveAndActKeypointDataset(BaseDataset):
         )
 
     # modified from: https://gist.github.com/srikarplus/15d7263ae2c82e82fe194fc94321f34e
-    def make_weights_for_balanced_classes(self, image_activies: List[str], activity_types: set[str]):
+    def make_weights_for_balanced_classes(self):
+        image_activies = self.image_activities
+        activity_types = self.activities
         activity_list = list(activity_types)
         activity_to_id = {activity: idx for idx, activity in enumerate(activity_list)}
         # id_to_activity = {idx: activity for idx, activity in enumerate(activity_list)}

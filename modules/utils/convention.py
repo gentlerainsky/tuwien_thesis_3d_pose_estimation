@@ -3,8 +3,8 @@ import os
 
 def get_saved_model_path(
     model_name,
-    model_suffix,
     trained_dataset_name,
+    model_suffix=None,
     trained_datasubset_name=None,
     pretrained_dataset_name=None,
     pretrained_datasubset_name=None,
@@ -23,7 +23,7 @@ def get_saved_model_path(
     saved_model_path += f'/{model_name}'
     
     if model_suffix is not None:
-        saved_model_path = f'{model_suffix}'
+        saved_model_path += f'/{model_suffix}'
 
     if create_if_not_exists:
         if not os.path.exists(saved_model_path):

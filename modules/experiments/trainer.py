@@ -11,13 +11,13 @@ early_stopping_patience = 2
 
 def create_trainer(
     saved_model_path,
-    monitor_metric='val_loss',
+    monitor_metric='mpjpe',
     max_epoch=max_epoch,
     val_check_period=val_check_period,
     early_stopping_patience=early_stopping_patience,
     enable_progress_bar=False
 ):
-    model_checkpoint = ModelCheckpoint(
+    model_checkpoint_callback = ModelCheckpoint(
         monitor=monitor_metric, mode='min', save_top_k=1
     )
     early_stopping = EarlyStopping(
@@ -31,7 +31,7 @@ def create_trainer(
     trainer = pl.Trainer(
         # max_steps=10,
         max_epochs=max_epoch,
-        callbacks=[model_checkpoint, early_stopping],
+        callbacks=[model_checkpoint_callback, early_stopping],
         accelerator=device,
         check_val_every_n_epoch=val_check_period,
         default_root_dir=saved_model_path,
@@ -40,5 +40,5 @@ def create_trainer(
     )
     return dict(
         trainer=trainer,
-        model_checkpoint=model_checkpoint
+        model_checkpoint_callback=model_checkpoint_callback
     )
