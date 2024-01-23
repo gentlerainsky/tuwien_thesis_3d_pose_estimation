@@ -142,6 +142,9 @@ class BaseDataset:
             w = self.image_width
             h = self.image_height
 
+            if self.is_center_to_neck:
+                pose_2d, root_2d = center_pose2d_to_neck(pose_2d)
+                pose_3d, root_3d = center_pose3d_to_neck(pose_3d)
             if self.is_normalize_to_bbox:
                 pose_2d, w, h = normalize_2d_pose_to_bbox(
                     pose_2d, bbox, self.bbox_format
@@ -152,9 +155,6 @@ class BaseDataset:
                 pose_2d, w, h = normalize_2d_pose_to_image(
                     pose_2d, self.image_width, self.image_height
                 )
-            if self.is_center_to_neck:
-                pose_2d, root_2d = center_pose2d_to_neck(pose_2d)
-                pose_3d, root_3d = center_pose3d_to_neck(pose_3d)
             if self.is_normalize_rotation:
                 pose_2d, pose_3d = normalize_rotation(pose_2d, pose_3d)
 
@@ -186,13 +186,13 @@ class BaseDataset:
         item = dict(
             img_id=sample["id"],
             arr_id=sample["array_idx"],
-            keypoints_2d=sample["pose_2d"][:, :2],
-            keypoints_3d=sample["pose_3d"],
+            keypoints_2d=sample["pose_2d"][:, :2].astype(np.float32),
+            keypoints_3d=sample["pose_3d"].astype(np.float32),
             # valid=sample["valid"],
             # activities=sample["activity"],
         )
         if sample['valid'] is not None:
             item['valid'] = sample['valid']
         if sample['activity'] is not None:
-            item['activities'] = sample['activity']
+            item['activity'] = sample['activity']
         return item

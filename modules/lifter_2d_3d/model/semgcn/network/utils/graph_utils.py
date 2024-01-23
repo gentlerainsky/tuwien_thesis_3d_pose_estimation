@@ -5,6 +5,53 @@ import numpy as np
 import scipy.sparse as sp
 
 
+connections = [
+    (0, 1, "nose_left_eye"),  # nose & left_eye
+    (0, 2, "nose_right_eye"),  # nose & right_eye
+    (1, 2, "left_right_eye"),  # left & right eyes
+    (1, 3, "left_eye_left_ear"),  # left eye & ear
+    (2, 4, "right_eye_right_ear"),  # right eye & ear
+    (0, 5, "nose_left_shoulder"),  # nose & left shoulder
+    (0, 6, "nose_right_shoulder"),  # nose & right shoulder
+    (3, 5, "left_ear_shoulder"),  # left ear & shoulder
+    (4, 6, "right_ear_shoulder"),  # right ear & shoulder
+    (5, 6, "left_shoulder_right_sholder"),  # left & right shoulder
+    (5, 7, "left_sholder_left_elbow"),  # left shoulder & elbow
+    (5, 11, "left_shoulder_left_hip"),  # left shoulder & hip
+    (6, 8, "right_shoulder_right_elbow"),  # right shoulder & elbow
+    (6, 12, "right_shoulder_right_hip"),  # right shoulder & hip
+    (7, 9, "left_elbow_left_wrist"),  # left elbow & wrist
+    (8, 10, "right_elbow_right_wrist"),  # right elbow & wrist
+    (11, 12, "left_hip_right_hip"),  # left & right hip
+    (11, 13, "left_hip_left_knee"),  # left hip & knee
+    (12, 14, "right_hip_right_knee"),  # right hip & knee
+    (13, 15, "left_knee_left_ankle"),  # left knee & ankle
+    (14, 16, "right_knee_right_ankle"),  # right knee & ankle
+]
+
+parents = [
+    -1,
+    0,
+    0,
+    1,
+    2,
+    0,
+    0,
+    5,
+    6,
+    7,
+    8,
+    5,
+    6,
+    11,
+    12,
+    # 13,
+    # 14
+]
+
+connections = np.array(connections)[:, :2].astype(int).tolist()
+
+
 def normalize(mx):
     """Row-normalize sparse matrix"""
     rowsum = np.array(mx.sum(1))

@@ -9,9 +9,6 @@ from pathlib import Path
 # ------------
 drive_and_act_dataset_root_path = Path('/root/data/processed/drive_and_act/')
 synthetic_cabin_ir_dataset_root_path = Path('/root/data/processed/synthetic_cabin_ir/')
-# keypoint_2d_path = dataset_root_path / 'keypoint_detection_results'
-# keypoint_3d_path = dataset_root_path / 'annotations'
-# bbox_file = dataset_root_path / 'person_detection_results'
 # ------------
 # model
 # ------------
@@ -22,6 +19,7 @@ batch_size = 64
 
 def construct_drive_and_act_dataset(
     dataset_root_path=drive_and_act_dataset_root_path,
+    viewpoint='A_Pillar_Codriver',
     keypoint_2d_folder='keypoint_detection_results',
     keypoint_3d_folder='annotations',
     bbox_folder='person_detection_results',
@@ -120,7 +118,10 @@ def construct_drive_and_act_dataset(
     val_loader = DataLoader(val_dataset, batch_size=batch_size, drop_last=True, num_workers=24)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers=24)
     all_activities = train_dataset.activities.union(val_dataset.activities).union(test_dataset.activities)
+    subset_suffix = 'gt' if (keypoint_2d_folder == 'annotations') else 'predicted'
     return dict(
+        dataset_name='drive_and_act',
+        datasubset_name=f'{viewpoint}_{subset_suffix}',
         train_loader=train_loader,
         val_loader=val_loader,
         test_loader=test_loader,
@@ -194,7 +195,10 @@ def construct_synthetic_cabin_ir(
     )
     all_activities = train_dataset.activities.union(val_dataset.activities)\
         .union(test_dataset.activities)
+    subset_suffix = 'gt' if (keypoint_2d_folder == 'annotations') else 'predicted'
     return dict(
+        dataset_name='synthetic_cabin_ir',
+        datasubset_name=f'{viewpoint}_{subset_suffix}',
         train_loader=train_loader,
         val_loader=val_loader,
         test_loader=test_loader,

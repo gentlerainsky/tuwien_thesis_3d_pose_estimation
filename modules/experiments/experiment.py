@@ -48,9 +48,13 @@ class Experiment:
     def remove_saved_model(self):
         # to make sure that it doesn't remove anything outside the project
         root = Path(os.getcwd())
-        child = Path(self.saved_model_path)
+        child = Path(self.saved_model_path).resolve()
         if root in child.parents:
-            shutil.rmtree(self.saved_model_path)
+            shutil.rmtree(child)
+
+    def create_log_folder(self):
+        if not os.path.exists(self.saved_model_path):
+            os.makedirs(self.saved_model_path)
 
     def _load_pretrained(self):
         with open(f'{self.pretrained_model_path}/best_model_path.txt', 'r') as f:
@@ -80,6 +84,7 @@ class Experiment:
 
     def setup(self, trainer_config=None):
         self.remove_saved_model()
+        self.create_log_folder()
         self.setup_dataset()
         self.setup_model()
         self.setup_trainer(trainer_config)
@@ -90,6 +95,14 @@ class Experiment:
             f.writelines(self.model_checkpoint_callback.best_model_path)
         self.best_checkpoint_path = self.model_checkpoint_callback.best_model_path
 
+    def print_result(self):
+        print(f'MPJPE = {self.test_mpjpe}')
+        print(f'PJPE =\n{pd.DataFrame(self.test_pjpe, index=["PJPE"]).T}')
+        if self.test_activity_macro_mpjpe is not None:
+            print(f'Activity-based Macro Average MPJPE = {self.test_activity_macro_mpjpe}')
+        if self.test_activity_macro_mpjpe is not None:
+            print(f'activity_mpjpe =\n{pd.DataFrame(self.test_activity_mpjpe, index=["MPJPE"]).T}')
+
     def _write_test_results(self):
         with open(f'{self.saved_model_path}/test_result.txt', 'w') as f:
             info = {
@@ -99,8 +112,6 @@ class Experiment:
                 'activity_mpjpe': self.test_activity_mpjpe,
                 'activity_macro_mpjpe': self.test_activity_macro_mpjpe
             }
-            if self.enable_log:
-                print(f'result\n{info}')
             f.write(json.dumps(info, indent=2))
 
     def test(self):
