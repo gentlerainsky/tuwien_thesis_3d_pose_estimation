@@ -68,8 +68,17 @@ class Evaluator:
         activity_macro_mpjpe = None
         if len(self.activity_macro_mpjpe) > 0:
             activity_macro_mpjpe = np.mean(self.activity_macro_mpjpe) * 1000
-        activities_mpjpe = {}
+        activities_mpjpe_data = []
+        activities_mpjpe = None
         if self.all_activities is not None:
-            for activity in self.activities_mpjpe.keys():
-                activities_mpjpe[activity] = np.array(self.activities_mpjpe[activity]).mean() * 1000
+            activities = list(self.activities_mpjpe.keys())
+            for activity in activities:
+                activities_mpjpe_data.append(
+                    np.array(self.activities_mpjpe[activity]).mean() * 1000
+                )
+            activities_mpjpe = pd.DataFrame(
+                data=activities_mpjpe_data,
+                index=activities,
+                columns=['MPJPE']
+            ).T.to_dict(orient='records')
         return pjpe, mpjpe, activities_mpjpe, activity_macro_mpjpe

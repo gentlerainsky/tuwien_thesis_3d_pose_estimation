@@ -41,13 +41,14 @@ class LitSemGCN(LitBaseModel):
             p_dropout=None,
         )
 
-    def forward(self, x):
+    def preprocess_x(self, x):
+        # add batch dimension if there is none.
         if len(x.shape) == 2:
             x = x.reshape(1, -1, 2)
-        y_hat = self.model(x)
-        return y_hat
+        x = x.float().squeeze(2)
+        return x
 
     def preprocess_input(self, x, y, valid, activity):
-        x = x.float().squeeze(2)
+        x = self.preprocess_x(x)
         y = y.float().squeeze(2)
         return x, y, valid, activity

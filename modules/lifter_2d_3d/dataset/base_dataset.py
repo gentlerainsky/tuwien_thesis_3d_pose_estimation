@@ -25,7 +25,8 @@ class BaseDataset:
         is_normalize_to_pose=False,
         is_normalize_rotation=None,
         bbox_format='xywh',
-        remove_activities=None
+        remove_activities=None,
+        is_gt_2d_pose=False
     ):
         self.annotation_file = annotation_file
         self.prediction_file = prediction_file
@@ -37,6 +38,7 @@ class BaseDataset:
         self.is_center_to_neck = is_center_to_neck
         self.is_normalize_to_bbox = is_normalize_to_bbox
         self.is_normalize_to_pose = is_normalize_to_pose
+        self.is_gt_2d_pose = is_gt_2d_pose
         if (is_normalize_to_pose and is_normalize_to_bbox):
             raise ValueError(
                 'is_normalize_to_pose and ' +
@@ -59,6 +61,8 @@ class BaseDataset:
         predictions = {}
         with open(self.prediction_file) as f:
             data = json.loads(f.read())
+            if self.is_gt_2d_pose:
+                data = data['annotations']
             for item in data:
                 predictions[item["image_id"]] = item
         return predictions
@@ -160,7 +164,6 @@ class BaseDataset:
 
             item = {
                 "id": image_info["id"],
-                "array_idx": idx,
                 "filenames": image_info["file_name"],
                 "frame_id": image_info.get("frame_id", None),
                 "actor": image_info.get("actor", None),
@@ -185,11 +188,8 @@ class BaseDataset:
         sample = self.samples[idx]
         item = dict(
             img_id=sample["id"],
-            arr_id=sample["array_idx"],
             keypoints_2d=sample["pose_2d"][:, :2].astype(np.float32),
             keypoints_3d=sample["pose_3d"].astype(np.float32),
-            # valid=sample["valid"],
-            # activities=sample["activity"],
         )
         if sample['valid'] is not None:
             item['valid'] = sample['valid']

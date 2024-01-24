@@ -25,11 +25,17 @@ class LitGraformer(LitBaseModel):
         self.register_buffer("src_mask", torch.tensor([[[True] * num_pts]]))
         self.model = GraFormer(adj=adj, hid_dim=128, n_pts=num_pts)
 
+    def preprocess_x(self, x):
+        # add batch dimension if there is none.
+        if len(x.shape) == 2:
+            x = x.reshape(1, -1, 2)
+        return x.float()
+
     def preprocess_input(self, x, y, valid, activity):
-        x = x.float()
+        x = self.preprocess_x(x)
         y = y.float()
         return x, y, valid, activity
 
     def forward(self, x):
-        y_hat = self.model(x, self.src_mask).squeeze()
+        y_hat = self.model(x, self.src_mask).squeeze(1)
         return y_hat

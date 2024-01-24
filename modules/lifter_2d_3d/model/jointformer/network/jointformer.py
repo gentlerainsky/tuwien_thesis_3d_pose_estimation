@@ -8,7 +8,7 @@ from modules.lifter_2d_3d.model.jointformer.network.transformer import (
     PositionalEncoding,
     EncoderLayer,
 )
-from modules.lifter_2d_3d.model.semgcn.sem_graph_conv import SemGraphConv
+from modules.lifter_2d_3d.model.semgcn.network.sem_graph_conv import SemGraphConv
 
 
 class ErrorRefinement(nn.Module):
@@ -144,7 +144,7 @@ class ErrorRefinement(nn.Module):
             The shape is [B, J, 3]. In case a list is returned, they are ordered from first encoder layer to last encoder layer.
         """
 
-        b, j, _ = shape  # Batch, Number of joints, Number of features per joint
+        b, j, _ = src.shape  # Batch, Number of joints, Number of features per joint
         intermediate_list = []
 
         # Expand dimensions.
@@ -382,7 +382,7 @@ class JointTransformer(nn.Module):
             Optional attention maps for every transformer encoder in the stack.
         """
 
-        b, j, _ = shape  # Batch, Number of joints, Number of features per joint
+        b, j, _ = src.shape  # Batch, Number of joints, Number of features per joint
         intermediate_list = []
         error_list = []
         enc_slf_attn_list = []

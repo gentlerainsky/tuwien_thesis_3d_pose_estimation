@@ -1,10 +1,3 @@
-from typing import List
-import torch
-import os
-import pandas as pd
-import json
-import numpy as np
-from modules.lifter_2d_3d.utils.normalization import rotate2D_to_x_axis, rotate3D_to_x_axis
 from modules.lifter_2d_3d.dataset.base_dataset import BaseDataset
 
 

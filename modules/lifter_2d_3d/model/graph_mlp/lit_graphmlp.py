@@ -17,11 +17,17 @@ class LitGraphMLP(LitBaseModel):
             n_joints=13
         )
 
+    def preprocess_x(self, x):
+        # add batch dimension if there is none.
+        if len(x.shape) == 2:
+            x = x.reshape(1, -1, 2)
+        return x.float().unsqueeze(1).to(self.device)
+
     def preprocess_input(self, x, y, valid, activity):
-        x = x.float().unsqueeze(1).to(self.device)
+        x = self.preprocess_x(x)
         y = y.float().to(self.device)
         return x, y, valid, activity
 
     def forward(self, x):
-        y_hat = self.model(x).squeeze()
+        y_hat = self.model(x).squeeze(1)
         return y_hat

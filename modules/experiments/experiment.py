@@ -64,8 +64,12 @@ class Experiment:
 
     def setup_model(self):
         if self.pretrained_model_path is not None:
+            if self.enable_log:
+                print(f'loaded from {self.pretrained_model_path}')
             self._load_pretrained()
         else:
+            if self.enable_log:
+                print(f'create new {self.LitModel.__name__} model')
             self.lit_model = self.LitModel(
                 **self.model_parameters
             )
@@ -74,6 +78,8 @@ class Experiment:
         if trainer_config is None:
             trainer_config = {}
         args = dict(
+            # run full sanity check on validation set
+            num_sanity_val_steps=-1,
             saved_model_path=self.saved_model_path,
             enable_progress_bar=self.enable_progress_bar,
             **trainer_config
@@ -94,6 +100,7 @@ class Experiment:
         with open(f'{self.saved_model_path}/best_model_path.txt', 'w') as f:
             f.writelines(self.model_checkpoint_callback.best_model_path)
         self.best_checkpoint_path = self.model_checkpoint_callback.best_model_path
+        self._write_training_log()
 
     def print_result(self):
         print(f'MPJPE = {self.test_mpjpe}')
@@ -103,15 +110,23 @@ class Experiment:
         if self.test_activity_macro_mpjpe is not None:
             print(f'activity_mpjpe =\n{pd.DataFrame(self.test_activity_mpjpe, index=["MPJPE"]).T}')
 
+    def _write_training_log(self):
+        with open(f'{self.saved_model_path}/training_log.json', 'w') as f:
+            info = dict(
+                train_history=self.lit_model.train_loss_log,
+                val_history=self.lit_model.val_history
+            )
+            f.write(json.dumps(info, indent=2))
+
     def _write_test_results(self):
-        with open(f'{self.saved_model_path}/test_result.txt', 'w') as f:
-            info = {
-                'checkpoint_path': self.best_checkpoint_path,
-                'mpjpe': self.test_mpjpe,
-                'pjpe': self.test_pjpe,
-                'activity_mpjpe': self.test_activity_mpjpe,
-                'activity_macro_mpjpe': self.test_activity_macro_mpjpe
-            }
+        with open(f'{self.saved_model_path}/test_result.json', 'w') as f:
+            info = dict(
+                checkpoint_path=self.best_checkpoint_path,
+                mpjpe=self.test_mpjpe,
+                pjpe=self.test_pjpe,
+                activity_mpjpe=self.test_activity_mpjpe,
+                activity_macro_mpjpe=self.test_activity_macro_mpjpe
+            )
             f.write(json.dumps(info, indent=2))
 
     def test(self):
@@ -123,6 +138,6 @@ class Experiment:
         self.test_pjpe = self.trainer.model.test_history[0]['pjpe']
         self.test_activity_mpjpe = pd.DataFrame(
             self.trainer.model.test_history[0]['activities_mpjpe'], index=['mpjpe']
-        ).T.to_dict(orient='records')
+        ).to_dict(orient='records')
         self.test_activity_macro_mpjpe = self.trainer.model.test_history[0]['activity_macro_mpjpe']
         self._write_test_results()

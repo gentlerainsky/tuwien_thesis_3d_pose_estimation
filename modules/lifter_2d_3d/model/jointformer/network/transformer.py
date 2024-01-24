@@ -533,12 +533,12 @@ class LiftFormer(nn.Module):
         # output = self.decoder(output)
         # output = output.permute(0,2,1)
 
-        b, j, c = shape
+        b, j, c = src.shape
 
         if self.conv_enc:
-            src = self.expand_conv(permute(0, 2, 1)).permute(0, 2, 1)
+            src = self.expand_conv(src.permute(0, 2, 1)).permute(0, 2, 1)
         else:
-            src = self.expand_conv(view(b, -1)).view(b, j, -1)
+            src = self.expand_conv(src.view(b, -1)).view(b, j, -1)
 
         if self.use_images:
             image_features = self.image_expand(image_features.view(-1, 3, 15, 15)).view(

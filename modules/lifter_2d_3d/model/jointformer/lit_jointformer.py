@@ -1,6 +1,6 @@
 import torch
 from torch.nn import functional as F
-from modules.lifter_2d_3d.model.semgcn.utils.graph_utils import adj_mx_from_edges
+from modules.lifter_2d_3d.model.semgcn.network.utils.graph_utils import adj_mx_from_edges
 from modules.lifter_2d_3d.model.jointformer.network.jointformer import JointTransformer
 from modules.lifter_2d_3d.model.common.lit_base_model import LitBaseModel
 
@@ -35,8 +35,14 @@ class LitJointFormer(LitBaseModel):
             adj=adj,
         )
 
+    def preprocess_x(self, x):
+        # add batch dimension if there is none.
+        if len(x.shape) == 2:
+            x = x.reshape(1, -1, 2)
+        return x.float()
+
     def preprocess_input(self, x, y, valid, activity):
-        x = x.float()
+        x = self.preprocess_x(x)
         y = y.float()
         return x, y, valid, activity
 
@@ -57,7 +63,9 @@ class LitJointFormer(LitBaseModel):
         return loss
 
     def training_step(self, batch, batch_idx):
-        x, y, valid, activities = self.preprocess_batch(batch)
+        x, y, valid, activities = self.preprocess_input(
+            *self.preprocess_batch(batch)
+            )
         out, enc_output, error = self.inference(x)
         loss_3d_pos = 0
         for outputs_3d, error_3d in zip(out, error):
