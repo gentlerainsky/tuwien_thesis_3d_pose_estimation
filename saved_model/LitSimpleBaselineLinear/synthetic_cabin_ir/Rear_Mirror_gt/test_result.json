@@ -1,0 +1,23 @@
+{
+  "checkpoint_path": "saved_lifter_2d_3d_model/LitSimpleBaselineLinear/synthetic_cabin_ir/Rear_Mirror_gt/lightning_logs/version_0/checkpoints/epoch=54-step=32175.ckpt",
+  "mpjpe": 36.95840388536453,
+  "pjpe": [
+    {
+      "nose": 28.440689086914062,
+      "left_eye": 27.551183700561523,
+      "right_eye": 29.80204963684082,
+      "left_ear": 23.515445709228516,
+      "right_ear": 24.129701614379883,
+      "left_shoulder": 9.567890167236328,
+      "right_shoulder": 9.54336929321289,
+      "left_elbow": 79.630859375,
+      "right_elbow": 50.671504974365234,
+      "left_wrist": 53.575408935546875,
+      "right_wrist": 60.31257247924805,
+      "left_hip": 41.278377532958984,
+      "right_hip": 39.97127914428711
+    }
+  ],
+  "activity_mpjpe": [],
+  "activity_macro_mpjpe": null
+}

@@ -64,7 +64,7 @@ class BaseDataset:
             if self.is_gt_2d_pose:
                 data = data['annotations']
             for item in data:
-                predictions[item["image_id"]] = item
+                predictions[item['image_id']] = item
         return predictions
 
     def read_bbox_file(self):
@@ -72,7 +72,7 @@ class BaseDataset:
         with open(self.bbox_file) as f:
             data = json.loads(f.read())
             for item in data:
-                bbox_info[item["image_id"]] = item
+                bbox_info[item['image_id']] = item
         return bbox_info
 
     def read_annotation_file(self):
@@ -80,10 +80,10 @@ class BaseDataset:
             data = json.loads(f.read())
             metadata = data['categories'][0]
             camera_parameters = data['camera_parameters']
-            images = data["images"]
+            images = data['images']
             if self.actors is not None:
-                images = [img for img in data["images"] if img["actor"] in self.actors]
-            image_annotation_info = {item["id"]: item for item in data["annotations"]}
+                images = [img for img in data['images'] if img['actor'] in self.actors]
+            image_annotation_info = {item['id']: item for item in data['annotations']}
         return {
             'metadata': metadata,
             'camera_parameters': camera_parameters,
@@ -101,7 +101,7 @@ class BaseDataset:
         # Drive & Act dataset specify unannotated joints
         # with a zero vector
         valid_keypoints = (pose_3d.sum(axis=1) != 0)
-        return pose_3d, pose_3d, valid_keypoints
+        return pose_2d, pose_3d, valid_keypoints
 
     def preprocess(self):
         predictions = self.read_prediction_file()
@@ -119,25 +119,22 @@ class BaseDataset:
                 images
             )
         for idx, image_info in enumerate(images):
-            ann_info = image_ann_info[image_info["id"]]
-            if ann_info["id"] not in predictions:
+            ann_info = image_ann_info[image_info['id']]
+            if ann_info['id'] not in predictions:
                 print(f'Annotation is not found for {ann_info["id"]}')
                 continue
-            
+
             # first 2 columns are x, y coordinate.
             # the last one is its confidence score.
             pose_2d = np.array(
-                predictions[ann_info["id"]]["keypoints"]
-            ).reshape(-1, 3)[:2]
-            pose_3d = np.array(ann_info["keypoints3D"]).reshape(-1, 3)
-            
+                predictions[ann_info['id']]['keypoints']
+            ).reshape(-1, 3)[:, :2]
+            pose_3d = np.array(ann_info['keypoints3D']).reshape(-1, 3)
             pose_2d, pose_3d, valid_kp = self.filter_relevance_joint(pose_2d, pose_3d)
-
             if not np.any(valid_kp):
                 print(f'skipping problematic image {ann_info["id"]}')
                 continue
-
-            bbox = bbox_info[ann_info["id"]]['bbox']
+            bbox = bbox_info[ann_info['id']]['bbox']
 
             # default image root
             root_2d = np.array([0, 0])
@@ -145,7 +142,7 @@ class BaseDataset:
             # scale by the image resolution
             w = self.image_width
             h = self.image_height
-
+            raw_pose_2d = np.copy(pose_2d)
             if self.is_center_to_neck:
                 pose_2d, root_2d = center_pose2d_to_neck(pose_2d)
                 pose_3d, root_3d = center_pose3d_to_neck(pose_3d)
@@ -159,26 +156,28 @@ class BaseDataset:
                 pose_2d, w, h = normalize_2d_pose_to_image(
                     pose_2d, self.image_width, self.image_height
                 )
+
             if self.is_normalize_rotation:
                 pose_2d, pose_3d = normalize_rotation(pose_2d, pose_3d)
 
             item = {
-                "id": image_info["id"],
-                "filenames": image_info["file_name"],
-                "frame_id": image_info.get("frame_id", None),
-                "actor": image_info.get("actor", None),
-                "activity": image_info.get("activity", None),
-                "pose_2d": pose_2d,
-                "pose_3d": pose_3d,
-                "valid": valid_kp,
-                "root_2d": root_2d,
-                "root_3d": root_3d,
-                "scale_factor": [w, h],
-                "bbox": bbox
+                'id': image_info['id'],
+                'filenames': image_info['file_name'],
+                'frame_id': image_info.get('frame_id', None),
+                'actor': image_info.get('actor', None),
+                'activity': image_info.get('activity', None),
+                'raw_pose_2d': raw_pose_2d,
+                'pose_2d': pose_2d,
+                'pose_3d': pose_3d,
+                'valid': valid_kp,
+                'root_2d': root_2d,
+                'root_3d': root_3d,
+                'scale_factor': [w, h],
+                'bbox': bbox
             }
             self.samples.append(item)
             if 'activity' in image_info:
-                self.activities.add(image_info["activity"])
+                self.activities.add(image_info['activity'])
                 self.image_activities.append(image_info['activity'])
 
     def __len__(self):
@@ -187,9 +186,9 @@ class BaseDataset:
     def __getitem__(self, idx) -> dict:
         sample = self.samples[idx]
         item = dict(
-            img_id=sample["id"],
-            keypoints_2d=sample["pose_2d"][:, :2].astype(np.float32),
-            keypoints_3d=sample["pose_3d"].astype(np.float32),
+            img_id=sample['id'],
+            keypoints_2d=sample['pose_2d'][:, :2].astype(np.float32),
+            keypoints_3d=sample['pose_3d'].astype(np.float32),
         )
         if sample['valid'] is not None:
             item['valid'] = sample['valid']

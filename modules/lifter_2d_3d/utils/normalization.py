@@ -6,6 +6,7 @@ def normalize_2d_pose_to_image(pose2d, image_width, image_height):
     out_pose2d[:, 1] = out_pose2d[:, 1] / image_height
     return out_pose2d, image_width, image_height
 
+
 def normalize_2d_pose_to_bbox(pose2d, bbox, bbox_format):
     # scale by the bounding box
     # note that 3D keypoints is usually already scaled.

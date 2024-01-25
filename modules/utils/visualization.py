@@ -112,8 +112,7 @@ def visualize_pose(pose_df):
 
 
 def plot_images(
-        img_ids, img_paths, gt_kp_2d_list, figsize, colors,
-        root_2d_list, scale_factor_list, bbox_list
+        img_ids, img_paths, gt_kp_2d_list, figsize, colors, bbox_list
     ):
     if len(img_paths) > 1:
         fig, axes = plt.subplots(1, len(img_paths), figsize=figsize)
@@ -121,22 +120,19 @@ def plot_images(
         fig, ax = plt.subplots(figsize=figsize)
         axes = [ax]
 
-    for idx, (gt_kp_2d, img_id, img_path, root_2d, scale_factor, bbox) in enumerate(
-            zip(gt_kp_2d_list, img_ids, img_paths, root_2d_list, scale_factor_list, bbox_list)
+    for idx, (gt_kp_2d, img_id, img_path, bbox) in enumerate(
+            zip(gt_kp_2d_list, img_ids, img_paths, bbox_list)
         ):
-        x_offset = root_2d[0]
-        y_offset = root_2d[1]
-        width, height = scale_factor
         axes[idx].scatter(
-            gt_kp_2d[:, 0] * width + x_offset,
-            gt_kp_2d[:, 1] * height + y_offset,
+            gt_kp_2d[:, 0],
+            gt_kp_2d[:, 1],
             c=colors,
             marker='o',
             alpha=.7,
         )
         axes[idx].plot(
-            gt_kp_2d[5:7, 0] * width + x_offset,
-            gt_kp_2d[5:7, 1] * height + y_offset,
+            gt_kp_2d[5:7, 0],
+            gt_kp_2d[5:7, 1],
         )
         axes[idx].imshow(plt.imread(img_path))
         x, y, x2, y2 = bbox
@@ -144,6 +140,15 @@ def plot_images(
         rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='g', facecolor='none', label='high bbox')
         axes[idx].add_patch(rect)
         axes[idx].set_title(f'Image {img_id}')
+
+def calculate_mpjpe(pred_3d, gt_3d, valid):
+    mask = np.tile(valid.reshape([-1, 1]), (1, 3))
+    pjpe = np.sqrt(
+        np.power((pred_3d - gt_3d), 2).sum(axis=1, where=mask)
+    )
+    mask = (pjpe != 0)
+    mpjpe = np.mean(pjpe, axis=0, where=mask)
+    return mpjpe
 
 def plot_skeleton(
         gt_kp_3d_list,
@@ -173,7 +178,7 @@ def plot_skeleton(
         x = kp_3d[:, 0]
         y = kp_3d[:, 1]
         predict_plot = axes[idx].scatter3D(x, depth, -y, c=colors, marker='x', depthshade=False, label='Predict')
-
+        mpjpe = calculate_mpjpe(kp_3d, gt_kp_3d, valid) * 1000
         if is_plot_gt_skeleton:
             results = generate_connection_line(gt_kp_3d)
         else:
@@ -184,6 +189,7 @@ def plot_skeleton(
                 [results[2*i]['z'], results[2*i + 1]['z']],
                 [-results[2*i]['y'], -results[2*i + 1]['y']],
             )
+        axes[idx].set_title(f'MPJPE = {mpjpe:.2f}')
         axes[idx].legend(loc='lower center')
         # axes[idx].set_xlabel('X')
         axes[idx].set_ylabel('Depth')
@@ -218,34 +224,28 @@ def plot_samples(
     gt_keypoints_2d_list = []
     gt_keypoints_3d_list = []
     keypoints_3d_list = []
-    root_2d_list = []
     root_3d_list = []
-    scale_factor_list = []
     bbox_list = []
     valids = []
     for sample_idx in sample_indices:
         sample = dataloader.dataset.samples[sample_idx]
         gt_keypoints_3d = sample['pose_3d'].astype(np.float32)
         gt_keypoints_2d = sample['pose_2d'].astype(np.float32)
-        root_2d = sample['root_2d']
+        raw_pose_2d = sample['raw_pose_2d']
         root_3d = sample['root_3d']
         bbox = sample['bbox']
-        scale_factor = sample['scale_factor']
         valid = sample['valid']
         estimated_pose = model(model.preprocess_x(torch.tensor(gt_keypoints_2d[:, :2])))
         keypoints_3d = estimated_pose[0].cpu().reshape([-1, 3]).detach().numpy()
-    
         img_path = (dataset_root_path / 'images' / data_subset / sample['filenames']).as_posix()
         img_id = sample['id']
         img_ids.append(img_id)
         img_paths.append(img_path)
         gt_keypoints_3d_list.append(gt_keypoints_3d)
-        gt_keypoints_2d_list.append(gt_keypoints_2d)
+        gt_keypoints_2d_list.append(raw_pose_2d)
         keypoints_3d_list.append(keypoints_3d)
         valids.append(valid)
-        root_2d_list.append(root_2d)
         root_3d_list.append(root_3d)
-        scale_factor_list.append(scale_factor)
         bbox_list.append(bbox)
     num_joints = gt_keypoints_2d.shape[0]
 
@@ -253,8 +253,6 @@ def plot_samples(
         img_ids=img_ids,
         img_paths=img_paths,
         gt_kp_2d_list=gt_keypoints_2d_list,
-        root_2d_list=root_2d_list,
-        scale_factor_list=scale_factor_list,
         bbox_list=bbox_list,
         figsize=img_figsize,
         colors=joint_colors[:num_joints]

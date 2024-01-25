@@ -17,6 +17,7 @@ class Evaluator:
         self.pjpe = []
         self.mpjpe = []
         self.activities_mpjpe = {}
+        self.activity_macro_mpjpe = []
 
     def calculate_mpjpe(self, pred_3d, gt_3d, valid):
         pjpe_list = []
@@ -25,7 +26,6 @@ class Evaluator:
         gt_3d = gt_3d.reshape(gt_3d.shape[0], -1, 3)
         # Loop over each sample in a batch
         for i in range(gt_3d.shape[0]):
-            mask = (gt_3d[i] != 0)
             mask = np.tile(valid[i].reshape([-1, 1]), (1, 3))
             pjpe = np.sqrt(
                 np.power((pred_3d[i] - gt_3d[i]), 2).sum(axis=1, where=mask)

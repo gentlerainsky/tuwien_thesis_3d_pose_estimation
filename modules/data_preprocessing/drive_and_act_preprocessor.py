@@ -59,13 +59,14 @@ class DriveAndActPreprocessor:
             test_subset,
             start_image_id=0,
             sampling_rate=5,
-            default_activity='sitting_still'
+            default_activity='sitting_still',
+            is_write_image=True
         ):
         self.dataset_root = Path(dataset_root)
         self.video_root = self.dataset_root / video_root
         self.source_annotation_3d_root = self.dataset_root / source_annotation_3d_root
         self.activity_df = pd.read_csv((self.dataset_root / activity_annotation_path).as_posix())
-        self.destination_root = Path(destination_root)
+        self.destination_root = Path(destination_root) / video_root
         self.image_folder = self.destination_root / image_folder
         self.train_image_path = self.image_folder / train_image_folder
         self.val_image_path = self.image_folder / val_image_folder
@@ -86,6 +87,7 @@ class DriveAndActPreprocessor:
         self.destination_width = 1280
         self.image_id = start_image_id
         self.default_activity = default_activity
+        self.is_write_image = is_write_image
         self.create_folder_if_not_exist()
 
     def create_folder_if_not_exist(self):
@@ -237,16 +239,18 @@ class DriveAndActPreprocessor:
             num_keypoints = int((pose_3d.loc[drive_and_act_keypoint_names]['p'] > 0).sum())
             pose_3d_array = pose_3d.loc[drive_and_act_keypoint_names][['x', 'y', 'z']].values.reshape(-1).tolist()
 
-            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
-            _, image = cap.read()
             image_file_name = f'{self.image_id}.jpg'
-            image_path = destination_image_folder_path / image_file_name
             image_annotation = self.create_final_image_annotations(self.image_id, image_file_name, actor, video_file, frame_number)
             image_annotations.append(image_annotation)
             skeleton_annotation = self.create_final_skeleton_annotaions(self.image_id, num_keypoints, pose_3d_array)
             keypoint_annotations.append(skeleton_annotation)
+
+            if self.is_write_image:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+                _, image = cap.read()
+                image_path = destination_image_folder_path / image_file_name
+                cv2.imwrite(image_path.as_posix(), image)
             self.image_id += 1
-            cv2.imwrite(image_path.as_posix(), image)
             # break
         if actor in self.val_subset:
             self.val_image_annotations += image_annotations

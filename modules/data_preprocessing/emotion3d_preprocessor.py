@@ -57,7 +57,8 @@ class Emotion3DPreprocessor:
         destination_width,
         val_subset,
         test_subset,
-        camera_positions=None
+        camera_positions=None,
+        is_write_image=True
     ):
         self.source_path = Path(source_path)
         self.root_destination_path = Path(destination_path)
@@ -81,6 +82,7 @@ class Emotion3DPreprocessor:
         self.val_subset = val_subset
         self.test_subset = test_subset
         self.camera_positions = camera_positions
+        self.is_write_image = is_write_image
 
     def set_camera_position(self, camera_position):
         self.destination_path = self.root_destination_path / camera_position
@@ -290,7 +292,8 @@ class Emotion3DPreprocessor:
                     if i == 0:
                         val_info[camera_position]["camera_parameters"] = data["camera_parameters"]
                     val_counter += 1
-                    self.save_images(img_name, "val")
+                    if self.is_write_image:
+                        self.save_images(img_name, "val")
                 else:
                     enough_val = True
             elif human_name in self.test_subset:
@@ -304,7 +307,8 @@ class Emotion3DPreprocessor:
                     if i == 0:
                         test_info[camera_position]["camera_parameters"] = data["camera_parameters"]
                     test_counter += 1
-                    self.save_images(img_name, "test")
+                    if self.is_write_image: 
+                        self.save_images(img_name, "test")
                 else:
                     enough_test = True
             else:
@@ -318,7 +322,8 @@ class Emotion3DPreprocessor:
                     train_counter += 1
                     if i == 0:
                         train_info[camera_position]["camera_parameters"] = data["camera_parameters"]
-                    self.save_images(img_name, "train")
+                    if self.is_write_image:
+                        self.save_images(img_name, "train")
                 else:
                     enough_train = True
             if enough_train and enough_val and enough_test:

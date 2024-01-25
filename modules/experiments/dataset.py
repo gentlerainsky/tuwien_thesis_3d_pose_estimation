@@ -20,7 +20,7 @@ batch_size = 64
 
 def construct_drive_and_act_dataset(
     dataset_root_path=drive_and_act_dataset_root_path,
-    viewpoint='A_Pillar_Codriver',
+    viewpoint='a_column_co_driver',
     keypoint_2d_folder='keypoint_detection_results',
     keypoint_3d_folder='annotations',
     bbox_folder='person_detection_results',

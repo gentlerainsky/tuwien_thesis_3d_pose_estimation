@@ -1,0 +1,731 @@
+{
+  "train_history": [],
+  "val_history": [
+    {
+      "pjpe": [
+        {
+          "nose": 3605.8857421875,
+          "left_eye": 2265.0380859375,
+          "right_eye": 2532.857666015625,
+          "left_ear": 1716.107666015625,
+          "right_ear": 2219.788818359375,
+          "left_shoulder": 3512.948974609375,
+          "right_shoulder": 1979.0206298828125,
+          "left_elbow": 1764.4140625,
+          "right_elbow": 953.1488037109375,
+          "left_wrist": 1041.20166015625,
+          "right_wrist": 2516.666748046875,
+          "left_hip": 1959.30224609375,
+          "right_hip": 2374.840576171875
+        }
+      ],
+      "mpjpe": 2188.07053565979,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 60.256019592285156,
+          "left_eye": 58.90196990966797,
+          "right_eye": 57.8499870300293,
+          "left_ear": 52.181541442871094,
+          "right_ear": 51.80396270751953,
+          "left_shoulder": 10.78598690032959,
+          "right_shoulder": 10.788239479064941,
+          "left_elbow": 95.77544403076172,
+          "right_elbow": 82.23531341552734,
+          "left_wrist": 150.68145751953125,
+          "right_wrist": 141.64761352539062,
+          "left_hip": 88.6271743774414,
+          "right_hip": 82.95854187011719
+        }
+      ],
+      "mpjpe": 72.66563177108765,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 54.94920349121094,
+          "left_eye": 53.65927505493164,
+          "right_eye": 52.184810638427734,
+          "left_ear": 48.101505279541016,
+          "right_ear": 46.17838668823242,
+          "left_shoulder": 11.155963897705078,
+          "right_shoulder": 11.23250675201416,
+          "left_elbow": 87.72335815429688,
+          "right_elbow": 78.80414581298828,
+          "left_wrist": 139.34201049804688,
+          "right_wrist": 132.20376586914062,
+          "left_hip": 84.28387451171875,
+          "right_hip": 79.5473861694336
+        }
+      ],
+      "mpjpe": 67.65440851449966,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 50.93231201171875,
+          "left_eye": 49.31343078613281,
+          "right_eye": 48.2917594909668,
+          "left_ear": 46.2719612121582,
+          "right_ear": 44.30390548706055,
+          "left_shoulder": 12.59130573272705,
+          "right_shoulder": 11.748373031616211,
+          "left_elbow": 87.72443389892578,
+          "right_elbow": 72.50428771972656,
+          "left_wrist": 135.8796844482422,
+          "right_wrist": 128.41094970703125,
+          "left_hip": 81.220947265625,
+          "right_hip": 76.33671569824219
+        }
+      ],
+      "mpjpe": 65.05144387483597,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 48.31830596923828,
+          "left_eye": 47.33313751220703,
+          "right_eye": 46.39193344116211,
+          "left_ear": 44.784183502197266,
+          "right_ear": 42.92202377319336,
+          "left_shoulder": 11.999251365661621,
+          "right_shoulder": 12.888076782226562,
+          "left_elbow": 83.78337097167969,
+          "right_elbow": 72.81084442138672,
+          "left_wrist": 130.61517333984375,
+          "right_wrist": 124.82865905761719,
+          "left_hip": 79.30205535888672,
+          "right_hip": 75.10276794433594
+        }
+      ],
+      "mpjpe": 63.170209527015686,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 47.72550582885742,
+          "left_eye": 46.71269607543945,
+          "right_eye": 45.95160675048828,
+          "left_ear": 44.37607192993164,
+          "right_ear": 42.94984817504883,
+          "left_shoulder": 11.119220733642578,
+          "right_shoulder": 11.07520866394043,
+          "left_elbow": 79.61341857910156,
+          "right_elbow": 74.12223815917969,
+          "left_wrist": 126.97222900390625,
+          "right_wrist": 125.22642517089844,
+          "left_hip": 78.82038879394531,
+          "right_hip": 74.3539047241211
+        }
+      ],
+      "mpjpe": 62.24258244037628,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 45.36576461791992,
+          "left_eye": 44.44032669067383,
+          "right_eye": 43.84847640991211,
+          "left_ear": 42.3917350769043,
+          "right_ear": 40.74986267089844,
+          "left_shoulder": 11.098185539245605,
+          "right_shoulder": 11.228609085083008,
+          "left_elbow": 77.9124526977539,
+          "right_elbow": 69.8656005859375,
+          "left_wrist": 123.24054718017578,
+          "right_wrist": 120.03826904296875,
+          "left_hip": 78.3692855834961,
+          "right_hip": 73.561767578125
+        }
+      ],
+      "mpjpe": 60.172758996486664,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 45.42087173461914,
+          "left_eye": 44.302730560302734,
+          "right_eye": 43.87294006347656,
+          "left_ear": 41.802589416503906,
+          "right_ear": 41.88789367675781,
+          "left_shoulder": 11.060331344604492,
+          "right_shoulder": 11.038633346557617,
+          "left_elbow": 78.48982238769531,
+          "right_elbow": 72.30548858642578,
+          "left_wrist": 124.66182708740234,
+          "right_wrist": 122.35225677490234,
+          "left_hip": 76.47703552246094,
+          "right_hip": 72.42304229736328
+        }
+      ],
+      "mpjpe": 60.47860160470009,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 44.956275939941406,
+          "left_eye": 43.86860656738281,
+          "right_eye": 43.11016845703125,
+          "left_ear": 42.39107131958008,
+          "right_ear": 40.47807693481445,
+          "left_shoulder": 10.933076858520508,
+          "right_shoulder": 10.830501556396484,
+          "left_elbow": 76.5896987915039,
+          "right_elbow": 69.5813980102539,
+          "left_wrist": 122.40164184570312,
+          "right_wrist": 120.2794418334961,
+          "left_hip": 75.66918182373047,
+          "right_hip": 71.64474487304688
+        }
+      ],
+      "mpjpe": 59.450987726449966,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 44.312217712402344,
+          "left_eye": 43.57244873046875,
+          "right_eye": 43.089820861816406,
+          "left_ear": 41.46183395385742,
+          "right_ear": 40.86149978637695,
+          "left_shoulder": 10.7725830078125,
+          "right_shoulder": 10.804060935974121,
+          "left_elbow": 76.43474578857422,
+          "right_elbow": 68.22936248779297,
+          "left_wrist": 121.84097290039062,
+          "right_wrist": 118.62589263916016,
+          "left_hip": 76.40083312988281,
+          "right_hip": 72.3076171875
+        }
+      ],
+      "mpjpe": 59.14169177412987,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 43.93375015258789,
+          "left_eye": 43.05292510986328,
+          "right_eye": 42.5187873840332,
+          "left_ear": 41.135887145996094,
+          "right_ear": 40.31442642211914,
+          "left_shoulder": 10.673845291137695,
+          "right_shoulder": 10.749391555786133,
+          "left_elbow": 75.5793685913086,
+          "right_elbow": 66.97724151611328,
+          "left_wrist": 120.90489196777344,
+          "right_wrist": 118.40432739257812,
+          "left_hip": 76.1193618774414,
+          "right_hip": 71.61974334716797
+        }
+      ],
+      "mpjpe": 58.62421542406082,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 43.59790802001953,
+          "left_eye": 42.68004608154297,
+          "right_eye": 42.08211135864258,
+          "left_ear": 41.31654739379883,
+          "right_ear": 40.16831970214844,
+          "left_shoulder": 10.586041450500488,
+          "right_shoulder": 10.553138732910156,
+          "left_elbow": 74.39549255371094,
+          "right_elbow": 67.44539642333984,
+          "left_wrist": 119.2806167602539,
+          "right_wrist": 115.87202453613281,
+          "left_hip": 75.18291473388672,
+          "right_hip": 71.18820190429688
+        }
+      ],
+      "mpjpe": 58.036450296640396,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 43.08127212524414,
+          "left_eye": 42.134647369384766,
+          "right_eye": 41.67440414428711,
+          "left_ear": 40.53235626220703,
+          "right_ear": 40.007774353027344,
+          "left_shoulder": 10.472511291503906,
+          "right_shoulder": 10.451210975646973,
+          "left_elbow": 75.08068084716797,
+          "right_elbow": 69.55936431884766,
+          "left_wrist": 118.06566619873047,
+          "right_wrist": 123.0617904663086,
+          "left_hip": 75.1380615234375,
+          "right_hip": 71.02336120605469
+        }
+      ],
+      "mpjpe": 58.49297717213631,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 43.309783935546875,
+          "left_eye": 42.351619720458984,
+          "right_eye": 42.03889083862305,
+          "left_ear": 40.38057327270508,
+          "right_ear": 39.29236602783203,
+          "left_shoulder": 10.656535148620605,
+          "right_shoulder": 10.60917854309082,
+          "left_elbow": 76.09943389892578,
+          "right_elbow": 67.94922637939453,
+          "left_wrist": 120.21562194824219,
+          "right_wrist": 118.86097717285156,
+          "left_hip": 75.14823913574219,
+          "right_hip": 71.0481185913086
+        }
+      ],
+      "mpjpe": 58.31415578722954,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 43.10584259033203,
+          "left_eye": 42.05972671508789,
+          "right_eye": 41.64576721191406,
+          "left_ear": 40.34101104736328,
+          "right_ear": 39.51518630981445,
+          "left_shoulder": 10.556312561035156,
+          "right_shoulder": 10.55750846862793,
+          "left_elbow": 74.7569580078125,
+          "right_elbow": 66.62532806396484,
+          "left_wrist": 118.28898620605469,
+          "right_wrist": 115.91162109375,
+          "left_hip": 74.44598388671875,
+          "right_hip": 70.65640258789062
+        }
+      ],
+      "mpjpe": 57.583943009376526,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.73073196411133,
+          "left_eye": 41.6304931640625,
+          "right_eye": 41.41655349731445,
+          "left_ear": 39.72864532470703,
+          "right_ear": 39.161808013916016,
+          "left_shoulder": 10.493185043334961,
+          "right_shoulder": 10.50826644897461,
+          "left_elbow": 73.43977355957031,
+          "right_elbow": 68.18433380126953,
+          "left_wrist": 117.06777954101562,
+          "right_wrist": 118.2237548828125,
+          "left_hip": 74.08868408203125,
+          "right_hip": 70.38850402832031
+        }
+      ],
+      "mpjpe": 57.4757494032383,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.78150177001953,
+          "left_eye": 41.76552963256836,
+          "right_eye": 41.461124420166016,
+          "left_ear": 40.12285614013672,
+          "right_ear": 39.090702056884766,
+          "left_shoulder": 10.494153022766113,
+          "right_shoulder": 10.497154235839844,
+          "left_elbow": 73.1238021850586,
+          "right_elbow": 65.6567153930664,
+          "left_wrist": 116.9975357055664,
+          "right_wrist": 115.89822387695312,
+          "left_hip": 74.6256103515625,
+          "right_hip": 70.29381561279297
+        }
+      ],
+      "mpjpe": 57.148657739162445,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.58306884765625,
+          "left_eye": 41.655242919921875,
+          "right_eye": 41.357078552246094,
+          "left_ear": 39.92913055419922,
+          "right_ear": 38.90660858154297,
+          "left_shoulder": 10.543889045715332,
+          "right_shoulder": 10.542448043823242,
+          "left_elbow": 72.73381805419922,
+          "right_elbow": 67.65654754638672,
+          "left_wrist": 117.71490478515625,
+          "right_wrist": 117.48320770263672,
+          "left_hip": 74.53616333007812,
+          "right_hip": 70.52055358886719
+        }
+      ],
+      "mpjpe": 57.40649998188019,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.57328796386719,
+          "left_eye": 41.42404556274414,
+          "right_eye": 41.18888854980469,
+          "left_ear": 39.57295227050781,
+          "right_ear": 39.023162841796875,
+          "left_shoulder": 10.563604354858398,
+          "right_shoulder": 10.560295104980469,
+          "left_elbow": 72.79009246826172,
+          "right_elbow": 67.30766296386719,
+          "left_wrist": 116.4104232788086,
+          "right_wrist": 117.1668930053711,
+          "left_hip": 74.09413146972656,
+          "right_hip": 70.173095703125
+        }
+      ],
+      "mpjpe": 57.15163052082062,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.21034622192383,
+          "left_eye": 41.076255798339844,
+          "right_eye": 40.81705856323242,
+          "left_ear": 39.56056213378906,
+          "right_ear": 38.81513595581055,
+          "left_shoulder": 10.536486625671387,
+          "right_shoulder": 10.539381980895996,
+          "left_elbow": 73.2363052368164,
+          "right_elbow": 68.06462860107422,
+          "left_wrist": 115.7851333618164,
+          "right_wrist": 120.09214782714844,
+          "left_hip": 74.58406829833984,
+          "right_hip": 70.25788116455078
+        }
+      ],
+      "mpjpe": 57.361479848623276,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.71550369262695,
+          "left_eye": 41.63228988647461,
+          "right_eye": 41.45302963256836,
+          "left_ear": 39.72514724731445,
+          "right_ear": 39.2356071472168,
+          "left_shoulder": 10.471068382263184,
+          "right_shoulder": 10.470726013183594,
+          "left_elbow": 72.32537841796875,
+          "right_elbow": 67.97297668457031,
+          "left_wrist": 117.28155517578125,
+          "right_wrist": 118.07609558105469,
+          "left_hip": 74.33551788330078,
+          "right_hip": 70.2583236694336
+        }
+      ],
+      "mpjpe": 57.39051103591919,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.2202033996582,
+          "left_eye": 41.04051208496094,
+          "right_eye": 40.694091796875,
+          "left_ear": 39.615055084228516,
+          "right_ear": 38.714378356933594,
+          "left_shoulder": 10.428544044494629,
+          "right_shoulder": 10.427739143371582,
+          "left_elbow": 72.67866516113281,
+          "right_elbow": 67.95235443115234,
+          "left_wrist": 116.6670150756836,
+          "right_wrist": 117.0755615234375,
+          "left_hip": 74.40968322753906,
+          "right_hip": 70.31983947753906
+        }
+      ],
+      "mpjpe": 57.10502713918686,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.44683074951172,
+          "left_eye": 41.34568405151367,
+          "right_eye": 41.105987548828125,
+          "left_ear": 39.53677749633789,
+          "right_ear": 38.95103454589844,
+          "left_shoulder": 10.532163619995117,
+          "right_shoulder": 10.531866073608398,
+          "left_elbow": 73.44611358642578,
+          "right_elbow": 66.22832489013672,
+          "left_wrist": 116.2926025390625,
+          "right_wrist": 115.09564971923828,
+          "left_hip": 74.19769287109375,
+          "right_hip": 70.13758850097656
+        }
+      ],
+      "mpjpe": 56.92092329263687,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.73991012573242,
+          "left_eye": 41.81454086303711,
+          "right_eye": 41.71438217163086,
+          "left_ear": 39.897029876708984,
+          "right_ear": 39.497371673583984,
+          "left_shoulder": 10.48581600189209,
+          "right_shoulder": 10.486640930175781,
+          "left_elbow": 71.68505859375,
+          "right_elbow": 65.88079071044922,
+          "left_wrist": 114.81327056884766,
+          "right_wrist": 114.64337921142578,
+          "left_hip": 74.4130630493164,
+          "right_hip": 70.16950225830078
+        }
+      ],
+      "mpjpe": 56.79722502827644,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.5163688659668,
+          "left_eye": 41.597408294677734,
+          "right_eye": 41.188812255859375,
+          "left_ear": 39.94963073730469,
+          "right_ear": 38.91338348388672,
+          "left_shoulder": 10.463329315185547,
+          "right_shoulder": 10.463184356689453,
+          "left_elbow": 73.37471008300781,
+          "right_elbow": 67.44573211669922,
+          "left_wrist": 117.03114318847656,
+          "right_wrist": 116.80340576171875,
+          "left_hip": 74.0013198852539,
+          "right_hip": 70.07705688476562
+        }
+      ],
+      "mpjpe": 57.22677707672119,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.590702056884766,
+          "left_eye": 41.41776657104492,
+          "right_eye": 40.96760940551758,
+          "left_ear": 39.814002990722656,
+          "right_ear": 38.84603500366211,
+          "left_shoulder": 10.537445068359375,
+          "right_shoulder": 10.536792755126953,
+          "left_elbow": 73.23755645751953,
+          "right_elbow": 68.27631378173828,
+          "left_wrist": 117.51750946044922,
+          "right_wrist": 118.78287506103516,
+          "left_hip": 74.98410034179688,
+          "right_hip": 70.64215850830078
+        }
+      ],
+      "mpjpe": 57.559505105018616,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.40293502807617,
+          "left_eye": 41.491798400878906,
+          "right_eye": 41.41242218017578,
+          "left_ear": 39.77355194091797,
+          "right_ear": 39.17467498779297,
+          "left_shoulder": 10.472444534301758,
+          "right_shoulder": 10.47249984741211,
+          "left_elbow": 72.97502136230469,
+          "right_elbow": 65.91824340820312,
+          "left_wrist": 116.34980773925781,
+          "right_wrist": 115.44978332519531,
+          "left_hip": 74.25526428222656,
+          "right_hip": 70.0860366821289
+        }
+      ],
+      "mpjpe": 56.95048347115517,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.503326416015625,
+          "left_eye": 41.49611282348633,
+          "right_eye": 41.25750732421875,
+          "left_ear": 39.47649383544922,
+          "right_ear": 38.74393081665039,
+          "left_shoulder": 10.47036361694336,
+          "right_shoulder": 10.47037410736084,
+          "left_elbow": 71.92707061767578,
+          "right_elbow": 65.99103546142578,
+          "left_wrist": 115.71910858154297,
+          "right_wrist": 113.5986328125,
+          "left_hip": 74.8240737915039,
+          "right_hip": 70.65703582763672
+        }
+      ],
+      "mpjpe": 56.71219155192375,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 43.21327209472656,
+          "left_eye": 42.151451110839844,
+          "right_eye": 41.6746940612793,
+          "left_ear": 40.37468719482422,
+          "right_ear": 39.540428161621094,
+          "left_shoulder": 10.448616981506348,
+          "right_shoulder": 10.448810577392578,
+          "left_elbow": 75.17739868164062,
+          "right_elbow": 67.5383529663086,
+          "left_wrist": 118.0625,
+          "right_wrist": 118.21704864501953,
+          "left_hip": 74.25963592529297,
+          "right_hip": 70.24908447265625
+        }
+      ],
+      "mpjpe": 57.806141674518585,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.91816711425781,
+          "left_eye": 41.74428939819336,
+          "right_eye": 41.59217071533203,
+          "left_ear": 39.70515823364258,
+          "right_ear": 39.15848159790039,
+          "left_shoulder": 10.471503257751465,
+          "right_shoulder": 10.471426010131836,
+          "left_elbow": 72.7778091430664,
+          "right_elbow": 66.99751281738281,
+          "left_wrist": 115.66405487060547,
+          "right_wrist": 116.08831787109375,
+          "left_hip": 74.57693481445312,
+          "right_hip": 70.4927749633789
+        }
+      ],
+      "mpjpe": 57.13686719536781,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.892356872558594,
+          "left_eye": 41.826961517333984,
+          "right_eye": 41.48961639404297,
+          "left_ear": 39.854549407958984,
+          "right_ear": 39.05158615112305,
+          "left_shoulder": 10.460015296936035,
+          "right_shoulder": 10.460003852844238,
+          "left_elbow": 73.175537109375,
+          "right_elbow": 66.12102508544922,
+          "left_wrist": 116.06763458251953,
+          "right_wrist": 116.59224700927734,
+          "left_hip": 74.5840835571289,
+          "right_hip": 70.41438293457031
+        }
+      ],
+      "mpjpe": 57.16251954436302,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.431453704833984,
+          "left_eye": 41.21449661254883,
+          "right_eye": 40.69704055786133,
+          "left_ear": 39.614540100097656,
+          "right_ear": 38.73617935180664,
+          "left_shoulder": 10.492501258850098,
+          "right_shoulder": 10.492520332336426,
+          "left_elbow": 73.21416473388672,
+          "right_elbow": 67.17866516113281,
+          "left_wrist": 116.14755249023438,
+          "right_wrist": 116.26050567626953,
+          "left_hip": 74.31973266601562,
+          "right_hip": 70.18647766113281
+        }
+      ],
+      "mpjpe": 57.00831115245819,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    },
+    {
+      "pjpe": [
+        {
+          "nose": 42.80480194091797,
+          "left_eye": 41.46161651611328,
+          "right_eye": 41.23357391357422,
+          "left_ear": 39.872222900390625,
+          "right_ear": 39.360504150390625,
+          "left_shoulder": 10.42862319946289,
+          "right_shoulder": 10.42860221862793,
+          "left_elbow": 72.30109405517578,
+          "right_elbow": 66.44801330566406,
+          "left_wrist": 114.92196655273438,
+          "right_wrist": 115.87500762939453,
+          "left_hip": 74.20368194580078,
+          "right_hip": 70.0864486694336
+        }
+      ],
+      "mpjpe": 56.88829347491264,
+      "activities_mpjpe": [],
+      "activity_macro_mpjpe": null
+    }
+  ]
+}

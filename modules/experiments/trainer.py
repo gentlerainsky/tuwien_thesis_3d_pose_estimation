@@ -15,7 +15,8 @@ def create_trainer(
     max_epoch=max_epoch,
     val_check_period=val_check_period,
     early_stopping_patience=early_stopping_patience,
-    enable_progress_bar=False
+    enable_progress_bar=False,
+    num_sanity_val_steps=-1,
 ):
     model_checkpoint_callback = ModelCheckpoint(
         monitor=monitor_metric, mode='min', save_top_k=1
@@ -36,7 +37,8 @@ def create_trainer(
         check_val_every_n_epoch=val_check_period,
         default_root_dir=saved_model_path,
         gradient_clip_val=1.0,
-        enable_progress_bar=enable_progress_bar
+        enable_progress_bar=enable_progress_bar,
+        num_sanity_val_steps=num_sanity_val_steps
     )
     return dict(
         trainer=trainer,
