@@ -20,6 +20,7 @@ class BaseDataset:
         actors=None,
         exclude_ankle=False,
         exclude_knee=False,
+        is_silence=True,
         is_center_to_neck=False,
         is_normalize_to_bbox=False,
         is_normalize_to_pose=False,
@@ -121,7 +122,8 @@ class BaseDataset:
         for idx, image_info in enumerate(images):
             ann_info = image_ann_info[image_info['id']]
             if ann_info['id'] not in predictions:
-                print(f'Annotation is not found for {ann_info["id"]}')
+                if not self.is_silence:
+                    print(f'Annotation is not found for {ann_info["id"]}')
                 continue
 
             # first 2 columns are x, y coordinate.
@@ -132,7 +134,8 @@ class BaseDataset:
             pose_3d = np.array(ann_info['keypoints3D']).reshape(-1, 3)
             pose_2d, pose_3d, valid_kp = self.filter_relevance_joint(pose_2d, pose_3d)
             if not np.any(valid_kp):
-                print(f'skipping problematic image {ann_info["id"]}')
+                if not self.is_silence:
+                    print(f'skipping problematic image {ann_info["id"]}')
                 continue
             bbox = bbox_info[ann_info['id']]['bbox']
 

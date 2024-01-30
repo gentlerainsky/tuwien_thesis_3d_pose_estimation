@@ -4,6 +4,7 @@ import shutil
 from pathlib import Path
 import pandas as pd
 from modules.experiments.trainer import create_trainer
+import logging
 
 
 class Experiment:
@@ -71,7 +72,8 @@ class Experiment:
             if self.enable_log:
                 print(f'create new {self.LitModel.__name__} model')
             self.lit_model = self.LitModel(
-                **self.model_parameters
+                **self.model_parameters,
+                all_activities=self.all_activities
             )
 
     def setup_trainer(self, trainer_config=None):
@@ -89,6 +91,9 @@ class Experiment:
         self.model_checkpoint_callback = output['model_checkpoint_callback']
 
     def setup(self, trainer_config=None):
+        if self.enable_log is False:
+            logging.getLogger("lightning.pytorch.utilities.rank_zero").setLevel(logging.WARNING)
+            logging.getLogger("lightning.pytorch.accelerators.cuda").setLevel(logging.WARNING)
         self.remove_saved_model()
         self.create_log_folder()
         self.setup_dataset()

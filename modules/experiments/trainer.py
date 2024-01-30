@@ -37,6 +37,7 @@ def create_trainer(
         check_val_every_n_epoch=val_check_period,
         default_root_dir=saved_model_path,
         gradient_clip_val=1.0,
+        logger=enable_progress_bar,
         enable_progress_bar=enable_progress_bar,
         num_sanity_val_steps=num_sanity_val_steps
     )

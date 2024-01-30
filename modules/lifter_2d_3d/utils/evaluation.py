@@ -7,7 +7,7 @@ class Evaluator:
     def __init__(self, all_activities=None):
         self.all_activities = all_activities
         if all_activities is not None:
-            self.all_activities = list(all_activities)
+            self.all_activities = sorted(list(all_activities))
         self.pjpe = []
         self.mpjpe = []
         self.activities_mpjpe = {}

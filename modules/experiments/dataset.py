@@ -17,8 +17,49 @@ image_width = 1280
 image_height = 1024
 batch_size = 64
 
+all_activities=[
+    'eating',
+    'pressing_automation_button',
+    'opening_bottle',
+    'drinking',
+    'interacting_with_phone',
+    'closing_bottle',
+    'reading_magazine',
+    'sitting_still',
+    'working_on_laptop',
+    'putting_on_sunglasses',
+    'taking_off_sunglasses',
+    'unfastening_seat_belt',
+    'using_multimedia_display',
+    'writing',
+    'opening_laptop',
+    'reading_newspaper',
+    'closing_laptop',
+    'talking_on_phone',
+    'closing_door_inside',
+    'fastening_seat_belt',
+    'placing_an_object',
+    'fetching_an_object',
+    'looking_or_moving_around (e.g. searching)',
+    'preparing_food',
+    'opening_door_inside',
+    'opening_backpack',
+    'entering_car',
+    'taking_laptop_from_backpack',
+    'putting_on_jacket',
+    'taking_off_jacket',
+    'exiting_car',
+    'putting_laptop_into_backpack'
+]
+
+
+all_train_actors = ['vp1', 'vp2', 'vp3', 'vp4', 'vp5', 'vp6', 'vp7', 'vp8']
+all_val_actors = ['vp9', 'vp10', 'vp15']
+all_test_actors = ['vp11', 'vp12', 'vp13', 'vp14']
+
 
 def construct_drive_and_act_dataset(
+    dataset_name='drive_and_act',
     dataset_root_path=drive_and_act_dataset_root_path,
     viewpoint='a_column_co_driver',
     keypoint_2d_folder='keypoint_detection_results',
@@ -26,10 +67,11 @@ def construct_drive_and_act_dataset(
     bbox_folder='person_detection_results',
     image_width=image_width,
     image_height=image_height,
-    train_actors=['vp1', 'vp2', 'vp3', 'vp4', 'vp5', 'vp6', 'vp7', 'vp8'],
-    val_actors=['vp9', 'vp10', 'vp15'],
-    test_actors=['vp11', 'vp12', 'vp13', 'vp14'],
+    train_actors=all_train_actors,
+    val_actors=all_val_actors,
+    test_actors=all_test_actors,
     batch_size=batch_size,
+    remove_activities=[]
 ):
     keypoint_2d_path = dataset_root_path / viewpoint / keypoint_2d_folder
     keypoint_3d_path = dataset_root_path / viewpoint / keypoint_3d_folder
@@ -48,40 +90,7 @@ def construct_drive_and_act_dataset(
         is_normalize_to_bbox=False,
         is_normalize_to_pose=True,
         is_normalize_rotation=True,
-        # remove_activities=[
-        #     'eating',
-        #     'pressing_automation_button',
-        #     'opening_bottle',
-        #     'drinking',
-        #     'interacting_with_phone',
-        #     'closing_bottle',
-        #     'reading_magazine',
-        #     'sitting_still',
-        #     'working_on_laptop',
-        #     'putting_on_sunglasses',
-        #     'taking_off_sunglasses',
-        #     'unfastening_seat_belt',
-        #     'using_multimedia_display',
-        #     'writing',
-        #     'opening_laptop',
-        #     'reading_newspaper',
-        #     'closing_laptop',
-        #     'talking_on_phone',
-        #     'closing_door_inside',
-        #     'fastening_seat_belt',
-        #     'placing_an_object',
-        #     'fetching_an_object',
-        #     'looking_or_moving_around (e.g. searching)',
-        #     'preparing_food',
-        #     'opening_door_inside',
-        #     'opening_backpack',
-        #     'entering_car',
-        #     'taking_laptop_from_backpack',
-        #     'putting_on_jacket',
-        #     'taking_off_jacket',
-        #     'exiting_car',
-        #     'putting_laptop_into_backpack'
-        # ]
+        remove_activities=remove_activities
     )
     val_dataset = DriveAndActKeypointDataset(
         prediction_file=(keypoint_2d_path / 'keypoint_detection_train.json').as_posix(),
@@ -121,7 +130,7 @@ def construct_drive_and_act_dataset(
     all_activities = train_dataset.activities.union(val_dataset.activities).union(test_dataset.activities)
     subset_suffix = 'gt' if (keypoint_2d_folder == 'annotations') else 'predicted'
     return dict(
-        dataset_name='drive_and_act',
+        dataset_name=dataset_name,
         datasubset_name=f'{viewpoint}_{subset_suffix}',
         train_loader=train_loader,
         val_loader=val_loader,
