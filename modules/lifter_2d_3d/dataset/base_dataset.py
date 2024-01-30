@@ -37,6 +37,7 @@ class BaseDataset:
         self.exclude_ankle = exclude_ankle
         self.exclude_knee = exclude_knee
         self.is_center_to_neck = is_center_to_neck
+        self.is_silence = is_silence
         self.is_normalize_to_bbox = is_normalize_to_bbox
         self.is_normalize_to_pose = is_normalize_to_pose
         self.is_gt_2d_pose = is_gt_2d_pose

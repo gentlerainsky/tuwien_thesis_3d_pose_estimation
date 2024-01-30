@@ -92,10 +92,10 @@ class LitBaseModel(pl.LightningModule):
     def on_validation_epoch_end(self):
         if not self.is_silence:
             print(f'check #{self.val_print_count}')
-        if len(self.train_loss_log) > 0:
-            print(
-                f'training loss from {len(self.train_loss_log)} batches: {np.mean(self.train_loss_log) * 1000}'
-            )
+            if len(self.train_loss_log) > 0:
+                print(
+                    f'training loss from {len(self.train_loss_log)} batches: {np.mean(self.train_loss_log) * 1000}'
+                )
         pjpe, mpjpe, activities_mpjpe, activity_macro_mpjpe = self.evaluator.get_result()
         if not self.is_silence:
             print(f'val MPJPE from: {len(self.evaluator.mpjpe)} samples : {mpjpe}')
@@ -119,8 +119,8 @@ class LitBaseModel(pl.LightningModule):
     def on_test_epoch_end(self):
         pjpe, mpjpe, activities_mpjpe, activity_macro_mpjpe = self.evaluator.get_result()
         self.log('mpjpe', mpjpe)
+        self.log('activity_macro_mpjpe', activity_macro_mpjpe)
         if (not self.is_silence) and (activity_macro_mpjpe is not None):
-            self.log('activity_macro_mpjpe', activity_macro_mpjpe)
             print('activity_macro_mpjpe', activity_macro_mpjpe)
         self.test_history.append({
             'pjpe': pjpe,
