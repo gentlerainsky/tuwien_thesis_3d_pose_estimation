@@ -14,6 +14,7 @@ class LitBaseModel(pl.LightningModule):
         exclude_knee=False,
         all_activities=[],
         is_silence=False,
+        joint_weights=None
     ):
         super().__init__()
         self.save_hyperparameters()
@@ -29,6 +30,7 @@ class LitBaseModel(pl.LightningModule):
         self.exclude_ankle = exclude_ankle
         self.exclude_knee = exclude_knee
         self.connections = connections
+        self.joint_weights = joint_weights
 
     def set_all_activities(self, all_activities):
         self.evaluator = Evaluator(all_activities=all_activities)
@@ -119,9 +121,10 @@ class LitBaseModel(pl.LightningModule):
     def on_test_epoch_end(self):
         pjpe, mpjpe, activities_mpjpe, activity_macro_mpjpe = self.evaluator.get_result()
         self.log('mpjpe', mpjpe)
-        self.log('activity_macro_mpjpe', activity_macro_mpjpe)
-        if (not self.is_silence) and (activity_macro_mpjpe is not None):
-            print('activity_macro_mpjpe', activity_macro_mpjpe)
+        if activity_macro_mpjpe is not None:
+            self.log('activity_macro_mpjpe', activity_macro_mpjpe)
+            if not self.is_silence:
+                print('activity_macro_mpjpe', activity_macro_mpjpe)
         self.test_history.append({
             'pjpe': pjpe,
             'mpjpe': mpjpe,

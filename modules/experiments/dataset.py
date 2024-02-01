@@ -128,10 +128,9 @@ def construct_drive_and_act_dataset(
     val_loader = DataLoader(val_dataset, batch_size=batch_size, drop_last=True, num_workers=24)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers=24)
     all_activities = train_dataset.activities.union(val_dataset.activities).union(test_dataset.activities)
-    subset_suffix = 'gt' if (keypoint_2d_folder == 'annotations') else 'predicted'
     return dict(
         dataset_name=dataset_name,
-        datasubset_name=f'{viewpoint}_{subset_suffix}',
+        datasubset_name=viewpoint,
         train_loader=train_loader,
         val_loader=val_loader,
         test_loader=test_loader,

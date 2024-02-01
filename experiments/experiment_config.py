@@ -20,15 +20,15 @@ two_actors_samples = [
     ('vp4', 'vp5')
 ]
 
-five_actors_samples = [
-    ('vp1', 'vp3', 'vp4', 'vp5', 'vp7'),
-    ('vp1', 'vp2', 'vp4', 'vp5', 'vp6'),
-    ('vp1', 'vp3', 'vp4', 'vp6', 'vp8'),
-    ('vp2', 'vp4', 'vp5', 'vp6', 'vp7'),
-    ('vp1', 'vp2', 'vp3', 'vp5', 'vp7'),
-    ('vp1', 'vp3', 'vp5', 'vp6', 'vp8'),
-    ('vp1', 'vp2', 'vp4', 'vp5', 'vp8'),
-    ('vp1', 'vp2', 'vp3', 'vp7', 'vp8'),
-    ('vp1', 'vp3', 'vp4', 'vp5', 'vp6'),
-    ('vp1', 'vp2', 'vp3', 'vp6', 'vp7')
+four_actors_samples = [
+    ('vp2', 'vp3', 'vp6', 'vp7'),
+    ('vp3', 'vp4', 'vp6', 'vp8'),
+    ('vp1', 'vp2', 'vp5', 'vp6'),
+    ('vp2', 'vp3', 'vp5', 'vp7'),
+    ('vp1', 'vp4', 'vp5', 'vp8'),
+    ('vp1', 'vp2', 'vp6', 'vp8'),
+    ('vp1', 'vp2', 'vp3', 'vp6'),
+    ('vp2', 'vp5', 'vp6', 'vp8'),
+    ('vp4', 'vp5', 'vp7', 'vp8'),
+    ('vp2', 'vp3', 'vp4', 'vp7')
 ]

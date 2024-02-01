@@ -57,6 +57,7 @@ class BaseDataset:
         if remove_activities is None:
             self.remove_activities = []
         self.image_activities = []
+        self.activity_image_map = {}
         self.preprocess()
 
     def read_prediction_file(self):
@@ -183,6 +184,9 @@ class BaseDataset:
             if 'activity' in image_info:
                 self.activities.add(image_info['activity'])
                 self.image_activities.append(image_info['activity'])
+                if image_info['activity'] not in self.activity_image_map:
+                    self.activity_image_map[image_info['activity']] = []
+                self.activity_image_map[image_info['activity']].append(idx)
 
     def __len__(self):
         return len(self.samples)

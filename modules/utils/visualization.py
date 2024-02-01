@@ -112,7 +112,7 @@ def visualize_pose(pose_df):
 
 
 def plot_images(
-        img_ids, img_paths, gt_kp_2d_list, figsize, colors, bbox_list
+        img_ids, img_paths, gt_kp_2d_list, figsize, colors, bbox_list, activities
     ):
     if len(img_paths) > 1:
         fig, axes = plt.subplots(1, len(img_paths), figsize=figsize)
@@ -120,8 +120,8 @@ def plot_images(
         fig, ax = plt.subplots(figsize=figsize)
         axes = [ax]
 
-    for idx, (gt_kp_2d, img_id, img_path, bbox) in enumerate(
-            zip(gt_kp_2d_list, img_ids, img_paths, bbox_list)
+    for idx, (gt_kp_2d, img_id, img_path, bbox, activity) in enumerate(
+            zip(gt_kp_2d_list, img_ids, img_paths, bbox_list, activities)
         ):
         axes[idx].scatter(
             gt_kp_2d[:, 0],
@@ -139,7 +139,10 @@ def plot_images(
         w, h = x2 - x, y2 - y
         rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='g', facecolor='none', label='high bbox')
         axes[idx].add_patch(rect)
-        axes[idx].set_title(f'Image {img_id}')
+        title = f'Image {img_id}'
+        if activity is not None:
+            title += f'\nAction: {activity}'
+        axes[idx].set_title(title)
 
 def calculate_mpjpe(pred_3d, gt_3d, valid):
     mask = np.tile(valid.reshape([-1, 1]), (1, 3))
@@ -227,6 +230,7 @@ def plot_samples(
     root_3d_list = []
     bbox_list = []
     valids = []
+    activities = []
     for sample_idx in sample_indices:
         sample = dataloader.dataset.samples[sample_idx]
         gt_keypoints_3d = sample['pose_3d'].astype(np.float32)
@@ -247,6 +251,7 @@ def plot_samples(
         valids.append(valid)
         root_3d_list.append(root_3d)
         bbox_list.append(bbox)
+        activities.append(sample.get('activity', None))
     num_joints = gt_keypoints_2d.shape[0]
 
     plot_images(
@@ -254,6 +259,7 @@ def plot_samples(
         img_paths=img_paths,
         gt_kp_2d_list=gt_keypoints_2d_list,
         bbox_list=bbox_list,
+        activities=activities,
         figsize=img_figsize,
         colors=joint_colors[:num_joints]
     )
@@ -266,6 +272,18 @@ def plot_samples(
         is_plot_gt_skeleton=is_plot_gt_skeleton,
         elev=10., azim=-90 + 45//2, roll=0
     )
+    
+    plot_skeleton(
+        gt_kp_3d_list=gt_keypoints_3d_list,
+        kp_3d_list=keypoints_3d_list,
+        valids=valids,
+        figsize=plot_figsize,
+        colors=joint_colors[:num_joints],
+        is_plot_gt_skeleton=is_plot_gt_skeleton,
+        # elev=10., azim=90 + 45//2, roll=0
+        elev=10, azim=-90, roll=0
+    )
+
     plot_skeleton(
         gt_kp_3d_list=gt_keypoints_3d_list,
         kp_3d_list=keypoints_3d_list,
