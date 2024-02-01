@@ -1,0 +1,41 @@
+all_activities: !!set
+  closing_backpack: null
+  closing_bottle: null
+  closing_door_inside: null
+  closing_laptop: null
+  drinking: null
+  eating: null
+  entering_car: null
+  exiting_car: null
+  fastening_seat_belt: null
+  fetching_an_object: null
+  interacting_with_phone: null
+  looking_back_left_shoulder: null
+  looking_back_right_shoulder: null
+  looking_or_moving_around (e.g. searching): null
+  opening_backpack: null
+  opening_bottle: null
+  opening_door_inside: null
+  opening_laptop: null
+  placing_an_object: null
+  preparing_food: null
+  pressing_automation_button: null
+  putting_laptop_into_backpack: null
+  putting_on_jacket: null
+  putting_on_sunglasses: null
+  reading_magazine: null
+  reading_newspaper: null
+  sitting_still: null
+  taking_laptop_from_backpack: null
+  taking_off_jacket: null
+  taking_off_sunglasses: null
+  talking_on_phone: null
+  unfastening_seat_belt: null
+  using_multimedia_display: null
+  working_on_laptop: null
+  writing: null
+exclude_ankle: true
+exclude_knee: true
+is_silence: false
+joint_weights: null
+learning_rate: 0.001

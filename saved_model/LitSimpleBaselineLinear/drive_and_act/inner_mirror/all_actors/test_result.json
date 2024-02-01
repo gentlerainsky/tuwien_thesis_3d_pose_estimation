@@ -1,0 +1,58 @@
+{
+  "checkpoint_path": "saved_lifter_2d_3d_model/LitSimpleBaselineLinear/drive_and_act/inner_mirror/all_actors/lightning_logs/version_0/checkpoints/epoch=74-step=26775.ckpt",
+  "mpjpe": 59.56367403268814,
+  "pjpe": [
+    {
+      "nose": 50.07070541381836,
+      "left_eye": 48.36703872680664,
+      "right_eye": 48.076210021972656,
+      "left_ear": 12.622998237609863,
+      "right_ear": 35.26751708984375,
+      "left_shoulder": 15.531994819641113,
+      "right_shoulder": 19.69443130493164,
+      "left_elbow": 68.625244140625,
+      "right_elbow": 65.639892578125,
+      "left_wrist": 74.99462890625,
+      "right_wrist": 86.75741577148438,
+      "left_hip": 62.2750129699707,
+      "right_hip": 63.64129638671875
+    }
+  ],
+  "activity_mpjpe": [
+    {
+      "closing_door_inside": 122.54643440246582,
+      "entering_car": 187.92787194252014,
+      "fastening_seat_belt": 116.14573746919632,
+      "sitting_still": 59.45313721895218,
+      "fetching_an_object": 140.4620110988617,
+      "pressing_automation_button": 52.379779517650604,
+      "putting_on_jacket": 208.0596685409546,
+      "unfastening_seat_belt": 86.61077171564102,
+      "placing_an_object": 132.03668594360352,
+      "taking_off_jacket": 234.8790168762207,
+      "opening_backpack": 206.75891637802124,
+      "taking_laptop_from_backpack": 138.23682069778442,
+      "working_on_laptop": 80.1486223936081,
+      "interacting_with_phone": 80.66157251596451,
+      "closing_laptop": 115.06986618041992,
+      "putting_laptop_into_backpack": 298.45932126045227,
+      "drinking": 57.18057230114937,
+      "opening_bottle": 60.642920434474945,
+      "closing_bottle": 74.77355003356934,
+      "eating": 48.414282500743866,
+      "using_multimedia_display": 86.94039285182953,
+      "reading_magazine": 65.74077904224396,
+      "taking_off_sunglasses": 122.74370342493057,
+      "writing": 85.88844537734985,
+      "putting_on_sunglasses": 89.99934047460556,
+      "reading_newspaper": 78.23160290718079,
+      "talking_on_phone": 100.85128247737885,
+      "exiting_car": 299.31455850601196,
+      "opening_door_inside": 196.1212456226349,
+      "preparing_food": 106.99193924665451,
+      "looking_or_moving_around (e.g. searching)": 149.40038323402405,
+      "opening_laptop": 104.65410351753235
+    }
+  ],
+  "activity_macro_mpjpe": 77.9118612408638
+}
