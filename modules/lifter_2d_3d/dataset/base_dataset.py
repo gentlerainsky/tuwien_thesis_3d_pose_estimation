@@ -106,6 +106,14 @@ class BaseDataset:
         valid_keypoints = (pose_3d.sum(axis=1) != 0)
         return pose_2d, pose_3d, valid_keypoints
 
+    def filter_samples(self, images):
+        if len(self.remove_activities) > 0:
+            return filter(
+                lambda x: x['activity'] not in self.remove_activities,
+                images
+            )
+        return images
+
     def preprocess(self):
         predictions = self.read_prediction_file()
         bbox_info = self.read_bbox_file()
@@ -116,11 +124,7 @@ class BaseDataset:
         images = annotation_info['images']
         image_ann_info = annotation_info['image_annotation_info']
         self.samples = []
-        if len(self.remove_activities) > 0:
-            images = filter(
-                lambda x: x['activity'] not in self.remove_activities,
-                images
-            )
+        images = self.filter_samples(images)
         for idx, image_info in enumerate(images):
             ann_info = image_ann_info[image_info['id']]
             if ann_info['id'] not in predictions:

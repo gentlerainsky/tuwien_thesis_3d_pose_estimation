@@ -241,7 +241,10 @@ def plot_samples(
         valid = sample['valid']
         estimated_pose = model(model.preprocess_x(torch.tensor(gt_keypoints_2d[:, :2])))
         keypoints_3d = estimated_pose[0].cpu().reshape([-1, 3]).detach().numpy()
-        img_path = (dataset_root_path / 'images' / data_subset / sample['filenames']).as_posix()
+        if data_subset is not None:
+            img_path = (dataset_root_path / 'images' / data_subset / sample['filenames']).as_posix()
+        else:
+            img_path = (dataset_root_path / 'images' / sample['filenames']).as_posix()
         img_id = sample['id']
         img_ids.append(img_id)
         img_paths.append(img_path)

@@ -1,6 +1,7 @@
 from torch.utils.data import DataLoader, sampler
-from modules.lifter_2d_3d.dataset.drive_and_act_keypoint_dataset import DriveAndActKeypointDataset
 from modules.lifter_2d_3d.dataset.base_dataset import BaseDataset
+from modules.lifter_2d_3d.dataset.drive_and_act_keypoint_dataset import DriveAndActKeypointDataset
+from modules.lifter_2d_3d.dataset.synthetic_cabin_ir_1m_dataset import SyntheticCabinIR1MKeypointDataset
 from pathlib import Path
 
 # common setting
@@ -10,6 +11,8 @@ from pathlib import Path
 drive_and_act_dataset_root_path = Path('/root/data/processed/drive_and_act/')
 synthetic_cabin_ir_dataset_root_path = Path('/root/data/processed/synthetic_cabin_ir/')
 synthetic_cabin_ir_1m_dataset_root_path = Path('/root/synthetic_cabin_1m/syntheticcabin_1mil/processed_syntheticCabin_1m/')
+synthetic_cabin_ir_1m_v2_dataset_root_path = Path('/root/data/processed/synthetic_cabin_1m/')
+synthetic_cabin_ir_1m_v2_image_root_path = Path('/root/synthetic_cabin_1m/syntheticcabin_1mil/SyntheticCabin_1m/')
 # ------------
 # model
 # ------------
@@ -215,6 +218,93 @@ def construct_synthetic_cabin_ir(
     return dict(
         dataset_name=dataset_name,
         datasubset_name=f'{viewpoint}_{subset_suffix}',
+        train_loader=train_loader,
+        val_loader=val_loader,
+        test_loader=test_loader,
+        all_activities=all_activities
+    )
+
+
+def construct_synthetic_cabin_ir_1m_v2(
+    dataset_name='synthetic_cabin_ir_1m',
+    dataset_root_path=synthetic_cabin_ir_1m_v2_dataset_root_path,
+    viewpoints=None,
+    keypoint_2d_folder='keypoint_detection_results',
+    keypoint_2d_file_prefix='keypoint_detection',
+    bbox_file_predix='human_detection',
+    keypoint_3d_folder='annotations',
+    bbox_folder='person_detection_results',
+    image_width=image_width,
+    image_height=image_height,
+    batch_size=batch_size,
+    is_gt_2d_pose=False,
+):
+    keypoint_2d_path = dataset_root_path / 'all_views' / keypoint_2d_folder
+    keypoint_3d_path = dataset_root_path / 'all_views' / keypoint_3d_folder
+    bbox_path = dataset_root_path / 'all_views' / bbox_folder
+    train_dataset = SyntheticCabinIR1MKeypointDataset(
+        prediction_file=(keypoint_2d_path / f'{keypoint_2d_file_prefix}_train.json').as_posix(),
+        annotation_file=(keypoint_3d_path / 'person_keypoints_train.json').as_posix(),
+        bbox_file=(bbox_path / f'{bbox_file_predix}_train.json').as_posix(),
+        image_width=image_width,
+        image_height=image_height,
+        exclude_ankle=True,
+        exclude_knee=True,
+        bbox_format='xyxy',
+        is_center_to_neck=True,
+        is_normalize_to_bbox=False,
+        is_normalize_to_pose=True,
+        is_normalize_rotation=True,
+        is_gt_2d_pose=is_gt_2d_pose,
+        included_view=viewpoints
+    )
+    val_dataset = SyntheticCabinIR1MKeypointDataset(
+        prediction_file=(keypoint_2d_path / f'{keypoint_2d_file_prefix}_val.json').as_posix(),
+        annotation_file=(keypoint_3d_path / 'person_keypoints_val.json').as_posix(),
+        bbox_file=(bbox_path / f'{bbox_file_predix}_val.json').as_posix(),
+        image_width=image_width,
+        image_height=image_height,
+        exclude_ankle=True,
+        exclude_knee=True,
+        bbox_format='xyxy',
+        is_center_to_neck=True,
+        is_normalize_to_bbox=False,
+        is_normalize_to_pose=True,
+        is_normalize_rotation=True,
+        is_gt_2d_pose=is_gt_2d_pose,
+        included_view=viewpoints
+    )
+    test_dataset = SyntheticCabinIR1MKeypointDataset(
+        prediction_file=(keypoint_2d_path / f'{keypoint_2d_file_prefix}_test.json').as_posix(),
+        annotation_file=(keypoint_3d_path / 'person_keypoints_test.json').as_posix(),
+        bbox_file=(bbox_path / f'{bbox_file_predix}_test.json').as_posix(),
+        image_width=image_width,
+        image_height=image_height,
+        exclude_ankle=True,
+        exclude_knee=True,
+        bbox_format='xyxy',
+        is_center_to_neck=True,
+        is_normalize_to_bbox=False,
+        is_normalize_to_pose=True,
+        is_normalize_rotation=True,
+        is_gt_2d_pose=is_gt_2d_pose,
+        included_view=viewpoints
+    )
+    train_loader = DataLoader(
+        train_dataset, batch_size=batch_size, drop_last=True, num_workers=24, shuffle=True
+    )
+    val_loader = DataLoader(
+        val_dataset, batch_size=batch_size, drop_last=True, num_workers=24
+    )
+    test_loader = DataLoader(
+        test_dataset, batch_size=batch_size, num_workers=24
+    )
+    all_activities = train_dataset.activities.union(val_dataset.activities)\
+        .union(test_dataset.activities)
+    subset_suffix = 'gt' if (keypoint_2d_folder == 'annotations') else 'predicted'
+    return dict(
+        dataset_name=dataset_name,
+        datasubset_name=f'{subset_suffix}',
         train_loader=train_loader,
         val_loader=val_loader,
         test_loader=test_loader,
