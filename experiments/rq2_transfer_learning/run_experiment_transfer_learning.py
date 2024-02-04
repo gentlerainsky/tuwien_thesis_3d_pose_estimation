@@ -29,21 +29,23 @@ subset_setup = {
 
 timer = Timer()
 timer.start()
-for viewpoint in DRIVE_AND_ACT_VIEWPOINTS:
+for viewpoint in DRIVE_AND_ACT_VIEWPOINTS[:1]:
     constructed_loader = get_drive_and_act_loaders(viewpoint)
     for LitModel in ALL_LIGHTNING_MODELS:
-        pretrained_model_path = f'saved_lifter_model/rq2/{LitModel.__name__}/synthetic_cabin_ir_1m/{driver_and_act_pretrained_map[viewpoint]}',
+        pretrained_model_path = f'saved_lifter_model/rq2/{LitModel.__name__}/synthetic_cabin_ir_1m/{driver_and_act_pretrained_map[viewpoint]}'
         for setup_name in subset_setup.keys():
             saved_model_path_root = f'saved_lifter_model/rq2/{LitModel.__name__}/transfer_learning/{viewpoint}/{setup_name}'
             summerizer = ExperimentSummarizer(
                 experiment_saved_path=saved_model_path_root,
-                experiment_labels=subset_setup.keys()
+                experiment_labels=subset_setup[setup_name][:2]
             )
-            for subset in subset_setup[setup_name]:
-                if subset == 'all_actors':
+            for subset in subset_setup[setup_name][:2]:
+                if setup_name == 'all_actors':
                     subset_name = 'all_actors'
-                else:
+                elif setup_name != 'single_actor':
                     subset_name = '_'.join(sorted(subset))
+                else:
+                    subset_name = subset
                 print(f'RUNNING FOR MODEL: {LitModel.__name__} / VIEWPOINT: {viewpoint} / SUBSET: {subset} / SAMPLE: {subset_name}')
                 experiment = Experiment(
                     LitModel=LitModel,

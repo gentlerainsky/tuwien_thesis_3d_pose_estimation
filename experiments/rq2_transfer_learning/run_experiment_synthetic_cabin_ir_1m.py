@@ -33,7 +33,11 @@ for viewpoint in synthetic_cabin_ir_1m_preprocess_loaders.keys():
             )
         )
         experiment.setup(
-            trainer_config=dict(max_epoch=5)
+            trainer_config=dict(
+                # max_epoch=1,
+                # val_check_period=1,
+                # early_stopping_patience=1,
+            )
         )
         experiment.train()
         experiment.test()

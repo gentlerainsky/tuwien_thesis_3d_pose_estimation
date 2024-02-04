@@ -38,10 +38,12 @@ for viewpoint in DRIVE_AND_ACT_VIEWPOINTS:
                 experiment_labels=subset_setup.keys()
             )
             for subset in subset_setup[setup_name]:
-                if subset == 'all_actors':
+                if setup_name == 'all_actors':
                     subset_name = 'all_actors'
-                else:
+                elif setup_name != 'single_actor':
                     subset_name = '_'.join(sorted(subset))
+                else:
+                    subset_name = subset
                 print(f'RUNNING FOR MODEL: {LitModel.__name__} / VIEWPOINT: {viewpoint} '
                       + '/ SUBSET: {subset} / SAMPLE: {subset_name}')
                 experiment = Experiment(
