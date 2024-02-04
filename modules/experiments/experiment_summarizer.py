@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 
-class ExperimentSummerizer:
+class ExperimentSummarizer:
     def __init__(self, experiment_saved_path, experiment_labels):
         self.saved_model_path = experiment_saved_path 
         self.experiment_labels = experiment_labels
