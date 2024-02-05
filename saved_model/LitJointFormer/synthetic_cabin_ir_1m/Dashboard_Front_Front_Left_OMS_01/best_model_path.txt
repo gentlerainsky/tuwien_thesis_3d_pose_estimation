@@ -1,0 +1,1 @@
+saved_lifter_2d_3d_model/rq2/LitJointFormer/synthetic_cabin_ir_1m/Dashboard_Front_Front_Left_OMS_01/lightning_logs/version_0/checkpoints/epoch=34-step=109375.ckpt

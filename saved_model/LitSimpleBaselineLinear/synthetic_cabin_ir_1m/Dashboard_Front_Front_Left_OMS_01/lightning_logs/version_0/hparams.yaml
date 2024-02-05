@@ -1,0 +1,6 @@
+all_activities: !!set {}
+exclude_ankle: true
+exclude_knee: true
+is_silence: false
+joint_weights: null
+learning_rate: 0.001
