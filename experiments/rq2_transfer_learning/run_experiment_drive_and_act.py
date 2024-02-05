@@ -32,7 +32,7 @@ for viewpoint in DRIVE_AND_ACT_VIEWPOINTS:
     constructed_loader = get_drive_and_act_loaders(viewpoint)
     for LitModel in ALL_LIGHTNING_MODELS:
         for setup_name in subset_setup.keys():
-            saved_model_path_root = f'saved_lifter_model/rq2/{LitModel.__name__}/drive_and_act/{viewpoint}/{setup_name}'
+            saved_model_path_root = f'saved_lifter_2d_3d_model/rq2/{LitModel.__name__}/drive_and_act/{viewpoint}/{setup_name}'
             summerizer = ExperimentSummarizer(
                 experiment_saved_path=saved_model_path_root,
                 experiment_labels=subset_setup.keys()

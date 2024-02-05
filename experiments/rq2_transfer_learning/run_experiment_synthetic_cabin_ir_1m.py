@@ -26,7 +26,7 @@ for viewpoint in synthetic_cabin_ir_1m_preprocess_loaders.keys():
         experiment = Experiment(
             LitModel=LitModel,
             constructed_loader=constructed_loader,
-            saved_model_path=f'saved_lifter_model/rq2/{LitModel.__name__}/synthetic_cabin_ir_1m/{viewpoint}',
+            saved_model_path=f'saved_lifter_2d_3d_model/rq2/{LitModel.__name__}/synthetic_cabin_ir_1m/{viewpoint}',
             model_parameters=dict(
                 exclude_ankle=True,
                 exclude_knee=True

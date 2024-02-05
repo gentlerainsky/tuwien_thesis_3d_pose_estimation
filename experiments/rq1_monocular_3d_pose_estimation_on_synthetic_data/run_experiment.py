@@ -24,7 +24,7 @@ for viewpoint in SYNTHETIC_CABIN_VIEWPOINTS:
         experiment = Experiment(
             LitModel=LitModel,
             constructed_loader=constructed_loader,
-            saved_model_path=f'saved_lifter_model/rq1/{LitModel.__name__}/{viewpoint}',
+            saved_model_path=f'saved_lifter_2d_3d_model/rq1/{LitModel.__name__}/{viewpoint}',
             model_parameters=dict(
                 exclude_ankle=True,
                 exclude_knee=True

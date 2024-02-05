@@ -65,20 +65,25 @@ four_actors_samples = [
 ]
 
 synthetic_cabin_ir_1m_preprocess_loaders = {
+    # For ALPLab Dataset
+    "Dashboard_Front_Front_Left_OMS_01": {
+        "path": "/root/data/processed/synthetic_cabin_1m/all_views/dataloaders/Dashboard_Front_Front_Left_OMS_01.pkl"
+    },
+    # For Co Driver Pillar
     "A_Pillar_Codriver_Front_Left_Front_TopLeft_Rear_Mirror": {
         "path": "/root/data/processed/synthetic_cabin_1m/all_views/dataloaders/A_Pillar_Codriver_Front_Left_Front_TopLeft_Rear_Mirror.pkl"
     },
+    # For Driver Pillar
     "A_Pillar_Driver_Front_Right_Front_TopRight": {
         "path": "/root/data/processed/synthetic_cabin_1m/all_views/dataloaders/A_Pillar_Driver_Front_Right_Front_TopRight.pkl"
     },
+    # For Rear Mirror
     "Dashboard_Front_OMS_01": {
         "path": "/root/data/processed/synthetic_cabin_1m/all_views/dataloaders/Dashboard_Front_OMS_01.pkl"
     },
+    # All views
     "all_views": {
         "path": "/root/data/processed/synthetic_cabin_1m/all_views/dataloaders/all_views.pkl"
-    },
-    "Dashboard_Front_Front_Left_OMS_01": {
-        "path": "/root/data/processed/synthetic_cabin_1m/all_views/dataloaders/Dashboard_Front_Front_Left_OMS_01.pkl"
     },
 }
 

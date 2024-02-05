@@ -32,9 +32,9 @@ timer.start()
 for viewpoint in DRIVE_AND_ACT_VIEWPOINTS[:1]:
     constructed_loader = get_drive_and_act_loaders(viewpoint)
     for LitModel in ALL_LIGHTNING_MODELS:
-        pretrained_model_path = f'saved_lifter_model/rq2/{LitModel.__name__}/synthetic_cabin_ir_1m/{driver_and_act_pretrained_map[viewpoint]}'
+        pretrained_model_path = f'saved_lifter_2d_3d_model/rq2/{LitModel.__name__}/synthetic_cabin_ir_1m/{driver_and_act_pretrained_map[viewpoint]}'
         for setup_name in subset_setup.keys():
-            saved_model_path_root = f'saved_lifter_model/rq2/{LitModel.__name__}/transfer_learning/{viewpoint}/{setup_name}'
+            saved_model_path_root = f'saved_lifter_2d_3d_model/rq2/{LitModel.__name__}/transfer_learning/{viewpoint}/{setup_name}'
             summerizer = ExperimentSummarizer(
                 experiment_saved_path=saved_model_path_root,
                 experiment_labels=subset_setup[setup_name][:2]
