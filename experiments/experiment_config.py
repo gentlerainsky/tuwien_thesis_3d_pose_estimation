@@ -93,6 +93,12 @@ driver_and_act_pretrained_map = {
     'inner_mirror': 'Dashboard_Front_OMS_01'
 }
 
+# driver_and_act_pretrained_map = {
+#     'a_column_co_driver': 'all_views',
+#     'a_column_driver': 'all_views',
+#     'inner_mirror': 'all_views'
+# }
+
 def get_processed_synthetic_cabin_ir_1m_loaders(viewpoint_name):
     if type(viewpoint_name) is list:
         viewpoint_name = '_'.join(sorted(viewpoint_name))

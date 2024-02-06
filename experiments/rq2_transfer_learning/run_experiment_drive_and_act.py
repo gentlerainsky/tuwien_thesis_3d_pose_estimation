@@ -28,15 +28,17 @@ subset_setup = {
 
 timer = Timer()
 timer.start()
-for viewpoint in DRIVE_AND_ACT_VIEWPOINTS:
-    constructed_loader = get_drive_and_act_loaders(viewpoint)
-    for LitModel in ALL_LIGHTNING_MODELS:
-        for setup_name in subset_setup.keys():
+
+for setup_name in subset_setup.keys():
+    for viewpoint in DRIVE_AND_ACT_VIEWPOINTS:
+        constructed_loader = get_drive_and_act_loaders(viewpoint)
+        for LitModel in ALL_LIGHTNING_MODELS:
             saved_model_path_root = f'saved_lifter_2d_3d_model/rq2/{LitModel.__name__}/drive_and_act/{viewpoint}/{setup_name}'
             summerizer = ExperimentSummarizer(
                 experiment_saved_path=saved_model_path_root,
-                experiment_labels=subset_setup.keys()
+                experiment_labels=None
             )
+            labels = []
             for subset in subset_setup[setup_name]:
                 if setup_name == 'all_actors':
                     subset_name = 'all_actors'
@@ -44,6 +46,7 @@ for viewpoint in DRIVE_AND_ACT_VIEWPOINTS:
                     subset_name = '_'.join(sorted(subset))
                 else:
                     subset_name = subset
+                labels.append(subset_name)
                 print(f'RUNNING FOR MODEL: {LitModel.__name__} / VIEWPOINT: {viewpoint} '
                       + f'/ SUBSET: {setup_name} / SAMPLE: {subset_name}')
                 experiment = Experiment(
@@ -72,6 +75,7 @@ for viewpoint in DRIVE_AND_ACT_VIEWPOINTS:
                 )
                 timer.lap()
                 print(timer)
+            summerizer.experiment_labels = labels
             summerizer.calculate()
             summerizer.print_summarize_result()
     timer.finish()
