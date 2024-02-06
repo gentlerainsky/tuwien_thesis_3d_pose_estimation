@@ -20,10 +20,10 @@ from experiments.experiment_config import (
 pl.seed_everything(1234)
 
 subset_setup = {
+    'all_actors': [all_train_actors],
     'single_actor': all_train_actors,
     'two_actors': two_actors_samples,
     'four_actors': four_actors_samples,
-    'all_actors': [all_train_actors]
 }
 
 timer = Timer()
@@ -45,7 +45,7 @@ for viewpoint in DRIVE_AND_ACT_VIEWPOINTS:
                 else:
                     subset_name = subset
                 print(f'RUNNING FOR MODEL: {LitModel.__name__} / VIEWPOINT: {viewpoint} '
-                      + '/ SUBSET: {subset} / SAMPLE: {subset_name}')
+                      + f'/ SUBSET: {setup_name} / SAMPLE: {subset_name}')
                 experiment = Experiment(
                     LitModel=LitModel,
                     constructed_loader=constructed_loader,
@@ -56,9 +56,7 @@ for viewpoint in DRIVE_AND_ACT_VIEWPOINTS:
                         exclude_knee=True
                     )
                 )
-                experiment.setup(
-                    trainer_config=dict(max_epoch=5)
-                )
+                experiment.setup()
                 experiment.train()
                 experiment.test()
                 experiment.print_result()
@@ -66,7 +64,11 @@ for viewpoint in DRIVE_AND_ACT_VIEWPOINTS:
                     test_mpjpe=experiment.test_mpjpe,
                     test_pjpe=experiment.test_pjpe[0],
                     test_activity_mpjpe=experiment.test_activity_mpjpe[0],
-                    test_activity_macro_mpjpe=experiment.test_activity_macro_mpjpe
+                    test_activity_macro_mpjpe=experiment.test_activity_macro_mpjpe,
+                    test_p_mpjpe=experiment.test_p_mpjpe,
+                    test_p_pjpe=experiment.test_p_pjpe[0],
+                    test_p_activity_mpjpe=experiment.test_p_activity_mpjpe[0],
+                    test_p_activity_macro_mpjpe=experiment.test_p_activity_macro_mpjpe
                 )
                 timer.lap()
                 print(timer)

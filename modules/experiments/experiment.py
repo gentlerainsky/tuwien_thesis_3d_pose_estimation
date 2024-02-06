@@ -112,8 +112,15 @@ class Experiment:
         print(f'PJPE =\n{pd.DataFrame(self.test_pjpe, index=["PJPE"]).T}')
         if self.test_activity_macro_mpjpe is not None:
             print(f'Activity-based Macro Average MPJPE = {self.test_activity_macro_mpjpe}')
-        if self.test_activity_macro_mpjpe is not None:
-            print(f'activity_mpjpe =\n{pd.DataFrame(self.test_activity_mpjpe, index=["MPJPE"]).T}')
+        if self.test_activity_mpjpe is not None:
+            print(f'Activity-base MPJPE =\n{pd.DataFrame(self.test_activity_mpjpe, index=["MPJPE"]).T}')
+        # Procrusted Version
+        print(f'P-MPJPE = {self.test_p_mpjpe}')
+        print(f'P-PJPE =\n{pd.DataFrame(self.test_p_pjpe, index=["P-PJPE"]).T}')
+        if self.test_p_activity_macro_mpjpe is not None:
+            print(f'Activity-based Macro Average P-MPJPE = {self.test_p_activity_macro_mpjpe}')
+        if self.test_p_activity_mpjpe is not None:
+            print(f'Activity-base P-MPJPE =\n{pd.DataFrame(self.test_p_activity_mpjpe, index=["P-MPJPE"]).T}')
 
     def _write_training_log(self):
         with open(f'{self.saved_model_path}/training_log.json', 'w') as f:
@@ -130,19 +137,37 @@ class Experiment:
                 mpjpe=self.test_mpjpe,
                 pjpe=self.test_pjpe,
                 activity_mpjpe=self.test_activity_mpjpe,
-                activity_macro_mpjpe=self.test_activity_macro_mpjpe
+                activity_macro_mpjpe=self.test_activity_macro_mpjpe,
+                # Procrusted Version
+                p_mpjpe=self.test_p_mpjpe,
+                p_pjpe=self.test_p_pjpe,
+                p_activity_mpjpe=self.test_p_activity_mpjpe,
+                p_activity_macro_mpjpe=self.test_p_activity_macro_mpjpe
             )
             f.write(json.dumps(info, indent=2))
 
     def test(self):
-        self.trainer.test(
-            ckpt_path=self.best_checkpoint_path,
-            dataloaders=self.test_loader
-        )
+        if self.best_checkpoint_path is None:
+            self.trainer.test(
+                self.lit_model,
+                dataloaders=self.test_loader
+            )
+        else:
+            self.trainer.test(
+                ckpt_path=self.best_checkpoint_path,
+                dataloaders=self.test_loader
+            )
         self.test_mpjpe = self.trainer.model.test_history[0]['mpjpe']
         self.test_pjpe = self.trainer.model.test_history[0]['pjpe']
         self.test_activity_mpjpe = pd.DataFrame(
             self.trainer.model.test_history[0]['activities_mpjpe'], index=['mpjpe']
         ).to_dict(orient='records')
         self.test_activity_macro_mpjpe = self.trainer.model.test_history[0]['activity_macro_mpjpe']
+        # Procrusted Version
+        self.test_p_mpjpe = self.trainer.model.test_history[0]['p_mpjpe']
+        self.test_p_pjpe = self.trainer.model.test_history[0]['p_pjpe']
+        self.test_p_activity_mpjpe = pd.DataFrame(
+            self.trainer.model.test_history[0]['p_activities_mpjpe'], index=['p_mpjpe']
+        ).to_dict(orient='records')
+        self.test_p_activity_macro_mpjpe = self.trainer.model.test_history[0]['p_activity_macro_mpjpe']
         self._write_test_results()

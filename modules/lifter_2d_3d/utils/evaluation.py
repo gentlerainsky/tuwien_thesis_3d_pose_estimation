@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
 from modules.data_preprocessing.definition import coco_keypoint_names
-
+from modules.lifter_2d_3d.utils.loss import p_mpjpe
 
 class Evaluator:
-    def __init__(self, all_activities=None):
+    def __init__(self, all_activities=None, is_procrustes=False):
         self.all_activities = all_activities
         if all_activities is not None:
             self.all_activities = sorted(list(all_activities))
@@ -12,6 +12,7 @@ class Evaluator:
         self.mpjpe = []
         self.activities_mpjpe = {}
         self.activity_macro_mpjpe = []
+        self.is_procrustes = is_procrustes
 
     def reset(self):
         self.pjpe = []
@@ -26,12 +27,23 @@ class Evaluator:
         gt_3d = gt_3d.reshape(gt_3d.shape[0], -1, 3)
         # Loop over each sample in a batch
         for i in range(gt_3d.shape[0]):
+            # Repeat valid in all three dimensions
             mask = np.tile(valid[i].reshape([-1, 1]), (1, 3))
-            pjpe = np.sqrt(
-                np.power((pred_3d[i] - gt_3d[i]), 2).sum(axis=1, where=mask)
-            )
+            if self.is_procrustes:
+                pjpe = np.zeros(gt_3d[i].shape[0])
+                result = p_mpjpe(
+                    np.expand_dims(gt_3d[i][valid[i]], 0),
+                    np.expand_dims(pred_3d[i][valid[i]], 0),
+                    reduce=None
+                )
+                pjpe[valid[i]] = result[0]
+            else:
+                pjpe = np.sqrt(
+                    np.power((pred_3d[i] - gt_3d[i]), 2).sum(axis=1, where=mask)
+                )
             pjpe_list.append(pjpe)
-            mask = (pjpe != 0)
+            # mask = (pjpe != 0)
+            mask = valid[i]
             mpjpe = np.mean(pjpe, axis=0, where=mask)
             mpjpe_list.append(mpjpe)
         return pjpe_list, mpjpe_list

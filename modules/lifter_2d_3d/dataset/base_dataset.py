@@ -131,7 +131,6 @@ class BaseDataset:
                 if not self.is_silence:
                     print(f'Annotation is not found for {ann_info["id"]}')
                 continue
-
             # first 2 columns are x, y coordinate.
             # the last one is its confidence score.
             pose_2d = np.array(
@@ -142,6 +141,17 @@ class BaseDataset:
             if not np.any(valid_kp):
                 if not self.is_silence:
                     print(f'skipping problematic image {ann_info["id"]}')
+                continue
+
+            # left_shoulder_index=5, right_shoulder_index=6
+            if (pose_3d[5].sum() == 0) or (pose_3d[6].sum() == 0):
+                if not self.is_silence:
+                    print(f'skip images which both shoulders are not visible. {ann_info["id"]}')
+                continue
+
+            if (pose_3d[valid_kp].shape[0] < (pose_3d.shape[0] // 2)):
+                if not self.is_silence:
+                    print(f'skip images which contains too few visible keypoints. {ann_info["id"]}')
                 continue
             bbox = bbox_info[ann_info['id']]['bbox']
 

@@ -26,6 +26,7 @@ class LitBaseModel(pl.LightningModule):
         self.test_history = []
         self.val_print_count = 0
         self.evaluator = Evaluator(all_activities=all_activities)
+        self.procrusted_evaluator = Evaluator(all_activities=all_activities, is_procrustes=True)
         self.is_silence = is_silence
         self.exclude_ankle = exclude_ankle
         self.exclude_knee = exclude_knee
@@ -34,6 +35,7 @@ class LitBaseModel(pl.LightningModule):
 
     def set_all_activities(self, all_activities):
         self.evaluator = Evaluator(all_activities=all_activities)
+        self.procrusted_evaluator = Evaluator(all_activities=all_activities, is_procrustes=True)
 
     def forward(self, x):
         y_hat = self.model(x)
@@ -57,7 +59,7 @@ class LitBaseModel(pl.LightningModule):
         return x, y, valid, activity
 
     def training_step(self, batch, batch_idx):
-        x, y, valid, activity = self.preprocess_input(*self.preprocess_batch(batch))
+        x, y, valid, activities = self.preprocess_input(*self.preprocess_batch(batch))
         y_hat = self.forward(x)
         loss = F.mse_loss(
             y_hat.reshape(y_hat.shape[0], -1, 3),
@@ -74,22 +76,26 @@ class LitBaseModel(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         x, y, valid, activities = self.preprocess_input(*self.preprocess_batch(batch))
         y_hat = self.forward(x)
-        self.evaluator.add_result(
+        result = (
             y_hat.detach().cpu().numpy(),
             y.detach().cpu().numpy(),
             valid.detach().cpu().numpy(),
             activities
         )
+        self.evaluator.add_result(*result)
+        self.procrusted_evaluator.add_result(*result)
 
     def test_step(self, batch, batch_idx):
         x, y, valid, activities = self.preprocess_input(*self.preprocess_batch(batch))
         y_hat = self.forward(x)
-        self.evaluator.add_result(
+        result = (
             y_hat.detach().cpu().numpy(),
             y.detach().cpu().numpy(),
             valid.detach().cpu().numpy(),
             activities
         )
+        self.evaluator.add_result(*result)
+        self.procrusted_evaluator.add_result(*result)
 
     def on_validation_epoch_end(self):
         if not self.is_silence:
@@ -99,37 +105,64 @@ class LitBaseModel(pl.LightningModule):
                     f'training loss from {len(self.train_loss_log)} batches: {np.mean(self.train_loss_log) * 1000}'
                 )
         pjpe, mpjpe, activities_mpjpe, activity_macro_mpjpe = self.evaluator.get_result()
+        p_pjpe, p_mpjpe, p_activities_mpjpe, p_activity_macro_mpjpe = self.procrusted_evaluator.get_result()
         if not self.is_silence:
             print(f'val MPJPE from: {len(self.evaluator.mpjpe)} samples : {mpjpe}')
+            print(f'val P-MPJPE from: {len(self.procrusted_evaluator.mpjpe)} samples : {p_mpjpe}')
             if activity_macro_mpjpe is not None:
                 print('activity_macro_mpjpe', activity_macro_mpjpe)
+            if p_activity_macro_mpjpe is not None:
+                print('activity_macro_procrusted_mpjpe', p_activity_macro_mpjpe)
         self.log('mpjpe', mpjpe)
+        self.log('p_mpjpe', p_mpjpe)
+
         if activity_macro_mpjpe is not None:
             self.log('activity_macro_mpjpe', activity_macro_mpjpe)
+        if p_activity_macro_mpjpe is not None:
+            self.log('p_activity_macro_mpjpe', p_activity_macro_mpjpe)
+
         if len(self.train_loss_log) > 0:
             self.train_history.append(np.mean(self.train_loss_log) * 1000)
             self.train_loss_log = []
-        self.val_print_count += 1
+        
         self.evaluator.reset()
+        self.procrusted_evaluator.reset()
         self.val_history.append({
             'pjpe': pjpe,
             'mpjpe': mpjpe,
             'activities_mpjpe': activities_mpjpe,
-            'activity_macro_mpjpe': activity_macro_mpjpe
+            'activity_macro_mpjpe': activity_macro_mpjpe,
+            'p_pjpe': p_pjpe,
+            'p_mpjpe': p_mpjpe,
+            'p_activities_mpjpe': p_activities_mpjpe,
+            'p_activity_macro_mpjpe': p_activity_macro_mpjpe,
         })
+
+        self.val_print_count += 1
 
     def on_test_epoch_end(self):
         pjpe, mpjpe, activities_mpjpe, activity_macro_mpjpe = self.evaluator.get_result()
+        p_pjpe, p_mpjpe, p_activities_mpjpe, p_activity_macro_mpjpe = self.procrusted_evaluator.get_result()
         self.log('mpjpe', mpjpe)
+        self.log('p_mpjpe', p_mpjpe)
         if activity_macro_mpjpe is not None:
             self.log('activity_macro_mpjpe', activity_macro_mpjpe)
             if not self.is_silence:
                 print('activity_macro_mpjpe', activity_macro_mpjpe)
+        
+        if p_activity_macro_mpjpe is not None:
+            self.log('p_activity_macro_mpjpe', p_activity_macro_mpjpe)
+            if not self.is_silence:
+                print('p_activity_macro_mpjpe', p_activity_macro_mpjpe)
         self.test_history.append({
             'pjpe': pjpe,
             'mpjpe': mpjpe,
             'activities_mpjpe': activities_mpjpe,
-            'activity_macro_mpjpe': activity_macro_mpjpe
+            'activity_macro_mpjpe': activity_macro_mpjpe,
+            'p_pjpe': p_pjpe,
+            'p_mpjpe': p_mpjpe,
+            'p_activities_mpjpe': p_activities_mpjpe,
+            'p_activity_macro_mpjpe': p_activity_macro_mpjpe,
         })
 
     def configure_optimizers(self):

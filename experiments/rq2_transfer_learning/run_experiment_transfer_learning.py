@@ -29,7 +29,7 @@ subset_setup = {
 
 timer = Timer()
 timer.start()
-for viewpoint in DRIVE_AND_ACT_VIEWPOINTS[:1]:
+for viewpoint in DRIVE_AND_ACT_VIEWPOINTS:
     constructed_loader = get_drive_and_act_loaders(viewpoint)
     for LitModel in ALL_LIGHTNING_MODELS:
         pretrained_model_path = f'saved_lifter_2d_3d_model/rq2/{LitModel.__name__}/synthetic_cabin_ir_1m/{driver_and_act_pretrained_map[viewpoint]}'
@@ -39,7 +39,7 @@ for viewpoint in DRIVE_AND_ACT_VIEWPOINTS[:1]:
                 experiment_saved_path=saved_model_path_root,
                 experiment_labels=subset_setup[setup_name][:2]
             )
-            for subset in subset_setup[setup_name][:2]:
+            for subset in subset_setup[setup_name]:
                 if setup_name == 'all_actors':
                     subset_name = 'all_actors'
                 elif setup_name != 'single_actor':
@@ -58,9 +58,7 @@ for viewpoint in DRIVE_AND_ACT_VIEWPOINTS[:1]:
                         exclude_knee=True
                     )
                 )
-                experiment.setup(
-                    trainer_config=dict(max_epoch=5)
-                )
+                experiment.setup()
                 experiment.train()
                 experiment.test()
                 experiment.print_result()
@@ -68,7 +66,11 @@ for viewpoint in DRIVE_AND_ACT_VIEWPOINTS[:1]:
                     test_mpjpe=experiment.test_mpjpe,
                     test_pjpe=experiment.test_pjpe[0],
                     test_activity_mpjpe=experiment.test_activity_mpjpe[0],
-                    test_activity_macro_mpjpe=experiment.test_activity_macro_mpjpe
+                    test_activity_macro_mpjpe=experiment.test_activity_macro_mpjpe,
+                    test_p_mpjpe=experiment.test_p_mpjpe,
+                    test_p_pjpe=experiment.test_p_pjpe[0],
+                    test_p_activity_mpjpe=experiment.test_p_activity_mpjpe[0],
+                    test_p_activity_macro_mpjpe=experiment.test_p_activity_macro_mpjpe,
                 )
                 timer.lap()
                 print(timer)
