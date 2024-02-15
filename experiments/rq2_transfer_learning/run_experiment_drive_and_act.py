@@ -39,7 +39,7 @@ for setup_name in subset_setup.keys():
                 experiment_labels=None
             )
             labels = []
-            for subset in subset_setup[setup_name][:2]:
+            for subset in subset_setup[setup_name]:
                 if setup_name == 'all_actors':
                     subset_name = 'all_actors'
                 elif setup_name != 'single_actor':

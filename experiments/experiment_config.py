@@ -13,21 +13,21 @@ from modules.lifter_2d_3d.model.jointformer.lit_jointformer import LitJointForme
 
 ALL_LIGHTNING_MODELS = [
     LitSimpleBaselineLinear,
-    # LitSemGCN,
-    # LitGraphMLP,
-    # LitGraformer,
+    LitSemGCN,
+    LitGraphMLP,
+    LitGraformer,
     LitJointFormer
 ]
 
 SYNTHETIC_CABIN_VIEWPOINTS = [
     'A_Pillar_Codriver',
-    # 'A_Pillar_Driver',
+    'A_Pillar_Driver',
     'Rear_Mirror'
 ]
 
 DRIVE_AND_ACT_VIEWPOINTS = [
-    # 'a_column_co_driver',
-    # 'a_column_driver',
+    'a_column_co_driver',
+    'a_column_driver',
     'inner_mirror'
 ]
 

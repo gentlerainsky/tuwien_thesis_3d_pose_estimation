@@ -20,10 +20,10 @@ from experiments.experiment_config import (
 pl.seed_everything(1234)
 
 subset_setup = {
-    # 'all_actors': [all_train_actors],
+    'all_actors': [all_train_actors],
     'single_actor': all_train_actors,
-    # 'two_actors': two_actors_samples,
-    # 'four_actors': four_actors_samples,
+    'two_actors': two_actors_samples,
+    'four_actors': four_actors_samples,
 }
 
 subset_percentages = [1, 2, 5, 10, 25, 50, 100]

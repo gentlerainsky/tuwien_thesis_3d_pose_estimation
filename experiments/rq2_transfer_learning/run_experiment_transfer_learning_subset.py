@@ -22,9 +22,9 @@ pl.seed_everything(1234)
 
 subset_setup = {
     'single_actor': all_train_actors,
-    # 'two_actors': two_actors_samples,
-    # 'four_actors': four_actors_samples,
-    # 'all_actors': [all_train_actors]
+    'two_actors': two_actors_samples,
+    'four_actors': four_actors_samples,
+    'all_actors': [all_train_actors]
 }
 
 subset_percentages = [1, 5, 10, 25, 50, 100]

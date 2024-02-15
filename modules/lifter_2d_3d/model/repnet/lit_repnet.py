@@ -131,8 +131,8 @@ class LitRepNet(pl.LightningModule):
             camera_out, gen_pose_3d, reprojected_2d = self.generator(input_2d)
             # ground truth result (ie: all fake)
             # put on GPU because we created this tensor inside training_loop
-            valid = torch.ones(input_2d.size(0), 1)
-            valid = valid.type_as(input_2d)
+            # valid = torch.ones(input_2d.size(0), 1)
+            # valid = valid.type_as(input_2d)
 
             g_loss = -torch.mean(self.discriminator(gen_pose_3d))
             c_loss = camera_loss(camera_out)
