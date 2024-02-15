@@ -6,8 +6,8 @@ from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 
 # common setting
 max_epoch = 200
-val_check_period = 5
-early_stopping_patience = 5
+val_check_period = 3
+early_stopping_patience = 3
 
 def create_trainer(
     saved_model_path,
@@ -39,7 +39,8 @@ def create_trainer(
         gradient_clip_val=1.0,
         logger=enable_progress_bar,
         enable_progress_bar=enable_progress_bar,
-        num_sanity_val_steps=num_sanity_val_steps
+        num_sanity_val_steps=num_sanity_val_steps,
+        log_every_n_steps=1
     )
     return dict(
         trainer=trainer,

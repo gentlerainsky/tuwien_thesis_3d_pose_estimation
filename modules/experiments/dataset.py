@@ -74,7 +74,8 @@ def construct_drive_and_act_dataset(
     val_actors=all_val_actors,
     test_actors=all_test_actors,
     batch_size=batch_size,
-    remove_activities=[]
+    remove_activities=[],
+    subset_percentage=100
 ):
     keypoint_2d_path = dataset_root_path / viewpoint / keypoint_2d_folder
     keypoint_3d_path = dataset_root_path / viewpoint / keypoint_3d_folder
@@ -93,7 +94,8 @@ def construct_drive_and_act_dataset(
         is_normalize_to_bbox=False,
         is_normalize_to_pose=True,
         is_normalize_rotation=True,
-        remove_activities=remove_activities
+        remove_activities=remove_activities,
+        subset_percentage=subset_percentage
     )
     val_dataset = DriveAndActKeypointDataset(
         prediction_file=(keypoint_2d_path / 'keypoint_detection_train.json').as_posix(),
@@ -108,7 +110,8 @@ def construct_drive_and_act_dataset(
         is_center_to_neck=True,
         is_normalize_to_bbox=False,
         is_normalize_to_pose=True,
-        is_normalize_rotation=True
+        is_normalize_rotation=True,
+        subset_percentage=subset_percentage
     )
     test_dataset = DriveAndActKeypointDataset(
         prediction_file=(keypoint_2d_path / 'keypoint_detection_train.json').as_posix(),
@@ -126,10 +129,21 @@ def construct_drive_and_act_dataset(
         is_normalize_rotation=True
     )
     train_dataset.make_weights_for_balanced_classes()
-    weighted_sampler = sampler.WeightedRandomSampler(train_dataset.sample_weight, len(train_dataset.sample_weight), replacement=True)
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, drop_last=True, num_workers=24, sampler=weighted_sampler)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, drop_last=True, num_workers=24)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers=24)
+    # weighted_sampler = sampler.WeightedRandomSampler(train_dataset.sample_weight, len(train_dataset.sample_weight), replacement=True)
+    # train_loader = DataLoader(train_dataset, batch_size=batch_size, drop_last=True, num_workers=24, sampler=weighted_sampler)
+    # val_loader = DataLoader(val_dataset, batch_size=batch_size, drop_last=True, num_workers=24)
+    # test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers=24)
+    train_loader = DataLoader(
+        train_dataset, batch_size=batch_size, drop_last=True, num_workers=24, shuffle=True
+    )
+    val_loader = DataLoader(
+        val_dataset, batch_size=batch_size, num_workers=24
+    )
+    test_loader = DataLoader(
+        test_dataset, batch_size=batch_size, num_workers=24
+    )
+    all_activities = train_dataset.activities.union(val_dataset.activities)\
+        .union(test_dataset.activities)
     all_activities = train_dataset.activities.union(val_dataset.activities).union(test_dataset.activities)
     return dict(
         dataset_name=dataset_name,
@@ -154,6 +168,7 @@ def construct_synthetic_cabin_ir(
     image_height=image_height,
     batch_size=batch_size,
     is_gt_2d_pose=False,
+    subset_percentage=100
 ):
     keypoint_2d_path = dataset_root_path / viewpoint / keypoint_2d_folder
     keypoint_3d_path = dataset_root_path / viewpoint / keypoint_3d_folder
@@ -171,7 +186,8 @@ def construct_synthetic_cabin_ir(
         is_normalize_to_bbox=False,
         is_normalize_to_pose=True,
         is_normalize_rotation=True,
-        is_gt_2d_pose=is_gt_2d_pose
+        is_gt_2d_pose=is_gt_2d_pose,
+        subset_percentage=subset_percentage
     )
     val_dataset = BaseDataset(
         prediction_file=(keypoint_2d_path / f'{keypoint_2d_file_prefix}_val.json').as_posix(),
@@ -186,7 +202,8 @@ def construct_synthetic_cabin_ir(
         is_normalize_to_bbox=False,
         is_normalize_to_pose=True,
         is_normalize_rotation=True,
-        is_gt_2d_pose=is_gt_2d_pose
+        is_gt_2d_pose=is_gt_2d_pose,
+        subset_percentage=subset_percentage
     )
     test_dataset = BaseDataset(
         prediction_file=(keypoint_2d_path / f'{keypoint_2d_file_prefix}_test.json').as_posix(),
@@ -207,7 +224,7 @@ def construct_synthetic_cabin_ir(
         train_dataset, batch_size=batch_size, drop_last=True, num_workers=24, shuffle=True
     )
     val_loader = DataLoader(
-        val_dataset, batch_size=batch_size, drop_last=True, num_workers=24
+        val_dataset, batch_size=batch_size, num_workers=24
     )
     test_loader = DataLoader(
         test_dataset, batch_size=batch_size, num_workers=24
@@ -238,6 +255,7 @@ def construct_synthetic_cabin_ir_1m_v2(
     image_height=image_height,
     batch_size=batch_size,
     is_gt_2d_pose=False,
+    subset_percentage=100
 ):
     keypoint_2d_path = dataset_root_path / 'all_views' / keypoint_2d_folder
     keypoint_3d_path = dataset_root_path / 'all_views' / keypoint_3d_folder
@@ -256,7 +274,8 @@ def construct_synthetic_cabin_ir_1m_v2(
         is_normalize_to_pose=True,
         is_normalize_rotation=True,
         is_gt_2d_pose=is_gt_2d_pose,
-        included_view=viewpoints
+        included_view=viewpoints,
+        subset_percentage=subset_percentage
     )
     val_dataset = SyntheticCabinIR1MKeypointDataset(
         prediction_file=(keypoint_2d_path / f'{keypoint_2d_file_prefix}_val.json').as_posix(),
@@ -272,7 +291,8 @@ def construct_synthetic_cabin_ir_1m_v2(
         is_normalize_to_pose=True,
         is_normalize_rotation=True,
         is_gt_2d_pose=is_gt_2d_pose,
-        included_view=viewpoints
+        included_view=viewpoints,
+        subset_percentage=subset_percentage
     )
     test_dataset = SyntheticCabinIR1MKeypointDataset(
         prediction_file=(keypoint_2d_path / f'{keypoint_2d_file_prefix}_test.json').as_posix(),
@@ -294,7 +314,7 @@ def construct_synthetic_cabin_ir_1m_v2(
         train_dataset, batch_size=batch_size, drop_last=True, num_workers=24, shuffle=True
     )
     val_loader = DataLoader(
-        val_dataset, batch_size=batch_size, drop_last=True, num_workers=24
+        val_dataset, batch_size=batch_size, num_workers=24
     )
     test_loader = DataLoader(
         test_dataset, batch_size=batch_size, num_workers=24

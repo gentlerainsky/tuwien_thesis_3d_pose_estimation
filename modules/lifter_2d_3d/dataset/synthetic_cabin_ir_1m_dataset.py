@@ -20,7 +20,8 @@ class SyntheticCabinIR1MKeypointDataset(BaseDataset):
         bbox_format='xywh',
         remove_activities=[],
         included_view=None,
-        is_gt_2d_pose=False
+        is_gt_2d_pose=False,
+        subset_percentage=100
     ):
         self.included_view = included_view
         super().__init__(
@@ -39,7 +40,8 @@ class SyntheticCabinIR1MKeypointDataset(BaseDataset):
             is_normalize_rotation,
             bbox_format,
             remove_activities,
-            is_gt_2d_pose=is_gt_2d_pose
+            is_gt_2d_pose=is_gt_2d_pose,
+            subset_percentage=subset_percentage
         )
 
     def filter_samples(self, images):

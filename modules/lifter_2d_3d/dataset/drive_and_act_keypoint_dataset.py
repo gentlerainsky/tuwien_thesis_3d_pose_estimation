@@ -18,7 +18,8 @@ class DriveAndActKeypointDataset(BaseDataset):
         is_normalize_to_pose=False,
         is_normalize_rotation=None,
         bbox_format='xywh',
-        remove_activities=[]
+        remove_activities=[],
+        subset_percentage=100
     ):
         super().__init__(
             annotation_file,
@@ -35,7 +36,8 @@ class DriveAndActKeypointDataset(BaseDataset):
             is_normalize_to_pose,
             is_normalize_rotation,
             bbox_format,
-            remove_activities
+            remove_activities,
+            subset_percentage=subset_percentage
         )
 
     # modified from: https://gist.github.com/srikarplus/15d7263ae2c82e82fe194fc94321f34e
@@ -56,3 +58,4 @@ class DriveAndActKeypointDataset(BaseDataset):
         for idx, activity in enumerate(image_activies):
             weight[idx] = weight_per_class[activity_to_id[activity]]
         self.sample_weight = weight
+        self.resampling()

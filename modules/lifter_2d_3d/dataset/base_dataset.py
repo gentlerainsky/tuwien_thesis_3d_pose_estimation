@@ -6,7 +6,8 @@ from modules.lifter_2d_3d.utils.normalization import (
     normalize_2d_pose_to_image,
     normalize_2d_pose_to_bbox,
     normalize_2d_pose_to_pose,
-    normalize_rotation
+    normalize_rotation,
+    rotate2D_to_x_axis
 )
 
 class BaseDataset:
@@ -27,7 +28,8 @@ class BaseDataset:
         is_normalize_rotation=None,
         bbox_format='xywh',
         remove_activities=None,
-        is_gt_2d_pose=False
+        is_gt_2d_pose=False,
+        subset_percentage=100
     ):
         self.annotation_file = annotation_file
         self.prediction_file = prediction_file
@@ -58,6 +60,9 @@ class BaseDataset:
             self.remove_activities = []
         self.image_activities = []
         self.activity_image_map = {}
+        subset_percentage /= 100
+        self.subset_percentage = subset_percentage
+        self.sample_weight = None
         self.preprocess()
 
     def read_prediction_file(self):
@@ -144,15 +149,15 @@ class BaseDataset:
                 continue
 
             # left_shoulder_index=5, right_shoulder_index=6
-            if (pose_3d[5].sum() == 0) or (pose_3d[6].sum() == 0):
-                if not self.is_silence:
-                    print(f'skip images which both shoulders are not visible. {ann_info["id"]}')
-                continue
+            # if (pose_3d[5].sum() == 0) or (pose_3d[6].sum() == 0):
+            #     if not self.is_silence:
+            #         print(f'skip images which both shoulders are not visible. {ann_info["id"]}')
+            #     continue
 
-            if (pose_3d[valid_kp].shape[0] < (pose_3d.shape[0] // 2)):
-                if not self.is_silence:
-                    print(f'skip images which contains too few visible keypoints. {ann_info["id"]}')
-                continue
+            # if (pose_3d[valid_kp].shape[0] < (pose_3d.shape[0] // 4)):
+            #     if not self.is_silence:
+            #         print(f'skip images which contains too few visible keypoints. {ann_info["id"]}')
+            #     continue
             bbox = bbox_info[ann_info['id']]['bbox']
 
             # default image root
@@ -177,7 +182,14 @@ class BaseDataset:
                 )
 
             if self.is_normalize_rotation:
-                pose_2d, pose_3d = normalize_rotation(pose_2d, pose_3d)
+                # pose_2d, pose_3d = normalize_rotation(pose_2d, pose_3d)
+                pose_2d = np.copy(pose_2d)
+                left_shoulder_index = 5
+                right_shoulder_index = 6
+                pose_2d[:, :2], rotation_matrix = rotate2D_to_x_axis(
+                    pose_2d[left_shoulder_index: right_shoulder_index + 1, :2],
+                    pose_2d[:, :2]
+                )
 
             item = {
                 'id': image_info['id'],
@@ -201,12 +213,32 @@ class BaseDataset:
                 if image_info['activity'] not in self.activity_image_map:
                     self.activity_image_map[image_info['activity']] = []
                 self.activity_image_map[image_info['activity']].append(idx)
+        self.resampling()
+
+    def resampling(self):
+        sample_size = len(self.samples)
+        all_indices = tuple(range(sample_size))
+        if self.subset_percentage < 1:
+            if self.sample_weight is not None:
+                weight = self.sample_weight
+            else:
+                weight = [1] * sample_size
+            weight /= np.sum(weight)
+            self.indices = np.random.choice(
+                all_indices,
+                int(self.subset_percentage * sample_size),
+                replace=False,
+                p=weight
+            )
+        else:
+            self.indices = all_indices
 
     def __len__(self):
-        return len(self.samples)
+        return len(self.indices)
     
     def __getitem__(self, idx) -> dict:
-        sample = self.samples[idx]
+        sample_idx = self.indices[idx]
+        sample = self.samples[sample_idx]
         item = dict(
             img_id=sample['id'],
             keypoints_2d=sample['pose_2d'][:, :2].astype(np.float32),

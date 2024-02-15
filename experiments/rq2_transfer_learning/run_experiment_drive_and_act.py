@@ -20,8 +20,8 @@ from experiments.experiment_config import (
 pl.seed_everything(1234)
 
 subset_setup = {
-    'all_actors': [all_train_actors],
     'single_actor': all_train_actors,
+    'all_actors': [all_train_actors],
     'two_actors': two_actors_samples,
     'four_actors': four_actors_samples,
 }
@@ -39,7 +39,7 @@ for setup_name in subset_setup.keys():
                 experiment_labels=None
             )
             labels = []
-            for subset in subset_setup[setup_name]:
+            for subset in subset_setup[setup_name][:2]:
                 if setup_name == 'all_actors':
                     subset_name = 'all_actors'
                 elif setup_name != 'single_actor':

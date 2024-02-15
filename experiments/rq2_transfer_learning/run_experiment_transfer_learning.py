@@ -48,7 +48,7 @@ for viewpoint in DRIVE_AND_ACT_VIEWPOINTS:
                 else:
                     subset_name = subset
                 labels.append(subset_name)
-                print(f'RUNNING FOR MODEL: {LitModel.__name__} / VIEWPOINT: {viewpoint} / SUBSET: {subset} / SAMPLE: {subset_name}')
+                print(f'RUNNING FOR MODEL: {LitModel.__name__} / VIEWPOINT: {viewpoint} / SUBSET: {setup_name} / SAMPLE: {subset_name}')
                 experiment = Experiment(
                     LitModel=LitModel,
                     constructed_loader=constructed_loader,

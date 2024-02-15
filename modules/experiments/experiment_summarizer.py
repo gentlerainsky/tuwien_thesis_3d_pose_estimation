@@ -4,7 +4,12 @@ import numpy as np
 
 
 class ExperimentSummarizer:
-    def __init__(self, experiment_saved_path, experiment_labels, output_filename='summary.json'):
+    def __init__(
+            self,
+            experiment_saved_path,
+            experiment_labels,
+            output_filename='summary.json'
+        ):
         self.saved_model_path = experiment_saved_path 
         self.experiment_labels = experiment_labels
         self.test_mpjpe_list = []

@@ -5,6 +5,7 @@ from modules.lifter_2d_3d.model.linear_model.network.linear_model import Baselin
 from modules.lifter_2d_3d.model.repnet.network.discriminator import DiscriminatorModel
 from modules.lifter_2d_3d.model.repnet.network.camera_net import CameraNet
 from modules.lifter_2d_3d.model.repnet.network.repnet import RepNet
+from modules.lifter_2d_3d.utils.evaluation import Evaluator
 from modules.lifter_2d_3d.model.repnet.network.utils import (
     camera_loss,
     weighted_pose_2d_loss
@@ -12,26 +13,32 @@ from modules.lifter_2d_3d.model.repnet.network.utils import (
 from collections import OrderedDict
 
 import numpy as np
+from torch.utils.data import DataLoader
 
 
 class LitRepNet(pl.LightningModule):
 
-    def __init__(self,
-                 lifter_2D_3D,
-                 latent_dim: int = 100,
-                 lr: float = 1e-4,
-                 b1: float = 0.5,
-                 b2: float = 0.9,
-                 batch_size: int = 64, **kwargs):
+    def __init__(
+            self,
+            lifter_2D_3D,
+            latent_dim: int = 100,
+            lr: float = 1e-4,
+            b1: float = 0.5,
+            b2: float = 0.9,
+            batch_size: int = 64,
+            all_activities=[],
+            is_silence=False,
+        ):
         super().__init__()
-        self.save_hyperparameters()
+        # self.save_hyperparameters()
+        self.save_hyperparameters(ignore=['lifter_2D_3D'])
         self.automatic_optimization = False
         self.latent_dim = latent_dim
         self.lr = lr
         self.b1 = b1
         self.b2 = b2
         self.batch_size = batch_size
-
+        self.is_silence = is_silence
         # networks
         self.lifter_2D_3D = lifter_2D_3D
         self.num_keypoints = 13
@@ -45,6 +52,8 @@ class LitRepNet(pl.LightningModule):
             input_dim = self.input_dim * 2
         )
         self.discriminator = DiscriminatorModel(input_size=self.input_dim * 3)
+        self.evaluator = Evaluator(all_activities=all_activities)
+        self.procrusted_evaluator = Evaluator(all_activities=all_activities, is_procrustes=True)
         self.val_loss_log = []
         self.val_print_count = 0
         self.total_g_loss_log = []
@@ -53,10 +62,36 @@ class LitRepNet(pl.LightningModule):
         self.c_loss_log = []
         self.d_loss_log = []
         self.test_loss_log = []
+        self.val_history = []
 
+    def forward(self, x):
+        y_hat = self.generator.lifter2D_3D(x)
+        return y_hat
 
-    def forward(self, z):
-        return self.generator.lifter2D_3D(z)
+    def preprocess_x(self, x):
+        # add batch dimension if there is none.
+        if len(x.shape) == 2:
+            x = x.reshape(1, -1, 2)
+        x = torch.flatten(x, start_dim=1).float()
+        return x
+
+    def preprocess_input(self, x, y, valid, activity):
+        x = self.preprocess_x(x)
+        y = torch.flatten(y, start_dim=1).float()
+        valid = torch.flatten(valid, start_dim=1)
+        return x, y, valid, activity
+
+    def preprocess_batch(self, batch):
+        x = batch['keypoints_2d']
+        y = batch['keypoints_3d']
+        valid = None
+        activity = None
+        if 'valid' in batch:
+            valid = batch['valid']
+        if 'activity' in batch:
+            activity = batch['activity']
+        return x, y, valid, activity
+
 
     def compute_gradient_penalty(self, real_samples, fake_samples):
         """Calculates the gradient penalty loss for WGAN GP"""
@@ -82,9 +117,11 @@ class LitRepNet(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         g_opt, d_opt = self.optimizers()
-        img_id, x, y, valid = batch
-        input_2d = torch.flatten(x, start_dim=1).float().to(self.device)
-        real_pose_3d = torch.flatten(y, start_dim=1).float().to(self.device)
+        x, y, valid, activity = self.preprocess_input(*self.preprocess_batch(batch))
+        # input_2d = torch.flatten(x, start_dim=1).float().to(self.device)
+        # real_pose_3d = torch.flatten(y, start_dim=1).float().to(self.device)
+        input_2d = x
+        real_pose_3d = y
         lambda_gp = 10
 
         # train generator
@@ -106,7 +143,7 @@ class LitRepNet(pl.LightningModule):
             g_opt.step()
         # train discriminator
         # Measure discriminator's ability to classify real from generated samples
-        for i in range(10):
+        for i in range(5):
             camera_out, gen_pose_3d, reprojected_2d = self.generator(input_2d)
 
             # Real images
@@ -126,38 +163,69 @@ class LitRepNet(pl.LightningModule):
         self.pose_2d_loss_log.append(pose_2d_loss.item())
         self.c_loss_log.append(c_loss.item())
         self.d_loss_log.append(d_loss.item())
-
-
+    
     def validation_step(self, batch, batch_idx):
-        img_id, x, y, valid = batch
-        x = torch.flatten(x, start_dim=1).float().to(self.device)
-        y = torch.flatten(y, start_dim=1).float().to(self.device)
-        y_hat = self.generator.lifter2D_3D(x)
-        loss = F.mse_loss(y_hat.reshape(y_hat.shape[0], -1, 3)[valid], y.reshape(y.shape[0], -1, 3)[valid])
-        self.log("val_loss", loss.item())
-        self.val_loss_log.append(torch.sqrt(loss).item())
-        return loss
+        # Validation is the normal MPJPE calculation
+        x, y, valid, activities =  self.preprocess_input(*self.preprocess_batch(batch))
+        y_hat = self.forward(x)
+        result = (
+            y_hat.detach().cpu().numpy(),
+            y.detach().cpu().numpy(),
+            valid.detach().cpu().numpy(),
+            activities
+        )
+        self.evaluator.add_result(*result)
+        self.procrusted_evaluator.add_result(*result)
 
     def on_validation_epoch_end(self):
-        print(f'check #{self.val_print_count}')
-        if len(self.total_g_loss_log) > 0:
-            print(f'training loss from {len(self.g_loss_log)} ' +
-                  f'batches:\nd_loss = {np.mean(self.d_loss_log)}\n' +
-                  f'g_loss = {np.mean(self.g_loss_log)}\n' +
-                  f'c_loss = {np.mean(self.c_loss_log)}\n' +
-                  f'pose_2d_loss = {np.mean(self.pose_2d_loss_log)}\n' +
-                  f'total_g_loss = {np.mean(self.total_g_loss_log)}')
-        val_loss = np.mean(self.val_loss_log)
-        print(f"val loss from: {len(self.val_loss_log)} batches : {val_loss * 1000}")
-        self.log("val_loss", val_loss.item())
+        if not self.is_silence:
+            print(f'check #{self.val_print_count}')
+            if len(self.total_g_loss_log) > 0:
+                print(f'training loss from {len(self.g_loss_log)} ' +
+                    f'batches:\nd_loss = {np.mean(self.d_loss_log)}\n' +
+                    f'g_loss = {np.mean(self.g_loss_log)}\n' +
+                    f'c_loss = {np.mean(self.c_loss_log)}\n' +
+                    f'pose_2d_loss = {np.mean(self.pose_2d_loss_log)}\n' +
+                    f'total_g_loss = {np.mean(self.total_g_loss_log)}')
         self.total_g_loss_log = []
         self.g_loss_log = []
         self.pose_2d_loss_log = []
         self.c_loss_log = []
         self.d_loss_log = []
         self.val_print_count += 1
-        self.val_loss_log = []
+        self.val_loss_log = []        
 
+        pjpe, mpjpe, activities_mpjpe, activity_macro_mpjpe = self.evaluator.get_result()
+        p_pjpe, p_mpjpe, p_activities_mpjpe, p_activity_macro_mpjpe = self.procrusted_evaluator.get_result()
+        if not self.is_silence:
+            print(f'val MPJPE from: {len(self.evaluator.mpjpe)} samples : {mpjpe}')
+            print(f'val P-MPJPE from: {len(self.procrusted_evaluator.mpjpe)} samples : {p_mpjpe}')
+            if activity_macro_mpjpe is not None:
+                print('activity_macro_mpjpe', activity_macro_mpjpe)
+            if p_activity_macro_mpjpe is not None:
+                print('activity_macro_procrusted_mpjpe', p_activity_macro_mpjpe)
+        self.log('mpjpe', mpjpe)
+        self.log('p_mpjpe', p_mpjpe)
+
+        if activity_macro_mpjpe is not None:
+            self.log('activity_macro_mpjpe', activity_macro_mpjpe)
+        if p_activity_macro_mpjpe is not None:
+            self.log('p_activity_macro_mpjpe', p_activity_macro_mpjpe)
+
+        self.evaluator.reset()
+        self.procrusted_evaluator.reset()
+        self.val_history.append({
+            'pjpe': pjpe,
+            'mpjpe': mpjpe,
+            'activities_mpjpe': activities_mpjpe,
+            'activity_macro_mpjpe': activity_macro_mpjpe,
+            'p_pjpe': p_pjpe,
+            'p_mpjpe': p_mpjpe,
+            'p_activities_mpjpe': p_activities_mpjpe,
+            'p_activity_macro_mpjpe': p_activity_macro_mpjpe,
+        })
+
+        self.val_print_count += 1
 
     def configure_optimizers(self):
         lr = self.lr
