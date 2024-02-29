@@ -48,7 +48,7 @@ class PoseEstimator2D:
         self.config.train_cfg['by_epoch'] = True
         # self.config.train_cfg['max_iters'] = 1000
         self.config.train_cfg['val_interval'] = 1
-        self.config.train_cfg['max_epochs'] = 10
+        self.config.train_cfg['max_epochs'] = 5
         self.config.train_dataloader['dataset']['data_root'] = self.config.data_root
         self.config.train_dataloader['dataset']['ann_file'] = 'annotations/person_keypoints_train.json'
         # if self.use_groundtruth_bbox:

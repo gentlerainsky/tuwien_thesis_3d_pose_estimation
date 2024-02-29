@@ -155,9 +155,10 @@ class BaseDataset:
             #     continue
 
             # if (pose_3d[valid_kp].shape[0] < (pose_3d.shape[0] // 4)):
-            #     if not self.is_silence:
-            #         print(f'skip images which contains too few visible keypoints. {ann_info["id"]}')
-            #     continue
+            if (pose_3d[valid_kp].shape[0] < 5):
+                if not self.is_silence:
+                    print(f'skip images which contains too few visible keypoints. {ann_info["id"]}')
+                continue
             bbox = bbox_info[ann_info['id']]['bbox']
 
             # default image root

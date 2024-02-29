@@ -77,4 +77,3 @@ class LitJointFormer(LitBaseModel):
         loss_3d_pos = loss_3d_pos / len(out)
         self.train_loss_log.append(torch.sqrt(loss_3d_pos).item())
         return loss_3d_pos
-

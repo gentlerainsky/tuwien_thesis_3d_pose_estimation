@@ -46,7 +46,7 @@ class Experiment:
                 'test_dataset', len(self.test_loader.dataset)
             )
     
-    def remove_saved_model(self):
+    def remove_saved_model_folder(self):
         # to make sure that it doesn't remove anything outside the project
         root = Path(os.getcwd())
         child = Path(self.saved_model_path).resolve()
@@ -94,7 +94,7 @@ class Experiment:
         if self.enable_log is False:
             logging.getLogger("lightning.pytorch.utilities.rank_zero").setLevel(logging.WARNING)
             logging.getLogger("lightning.pytorch.accelerators.cuda").setLevel(logging.WARNING)
-        self.remove_saved_model()
+        self.remove_saved_model_folder()
         self.create_log_folder()
         self.setup_dataset()
         self.setup_model()
@@ -171,3 +171,7 @@ class Experiment:
         ).to_dict(orient='records')
         self.test_p_activity_macro_mpjpe = self.trainer.model.test_history[0]['p_activity_macro_mpjpe']
         self._write_test_results()
+    
+    def remove_saved_model(self):
+        if self.saved_model_path:
+            shutil.rmtree((Path(self.saved_model_path) / 'lightning_logs').as_posix())

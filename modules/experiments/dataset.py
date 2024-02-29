@@ -93,7 +93,7 @@ def construct_drive_and_act_dataset(
         is_center_to_neck=True,
         is_normalize_to_bbox=False,
         is_normalize_to_pose=True,
-        is_normalize_rotation=True,
+        is_normalize_rotation=False,
         remove_activities=remove_activities,
         subset_percentage=subset_percentage
     )
@@ -110,7 +110,7 @@ def construct_drive_and_act_dataset(
         is_center_to_neck=True,
         is_normalize_to_bbox=False,
         is_normalize_to_pose=True,
-        is_normalize_rotation=True,
+        is_normalize_rotation=False,
         subset_percentage=subset_percentage
     )
     test_dataset = DriveAndActKeypointDataset(
@@ -126,7 +126,7 @@ def construct_drive_and_act_dataset(
         is_center_to_neck=True,
         is_normalize_to_bbox=False,
         is_normalize_to_pose=True,
-        is_normalize_rotation=True
+        is_normalize_rotation=False
     )
     train_dataset.make_weights_for_balanced_classes()
     # weighted_sampler = sampler.WeightedRandomSampler(train_dataset.sample_weight, len(train_dataset.sample_weight), replacement=True)
@@ -185,7 +185,7 @@ def construct_synthetic_cabin_ir(
         is_center_to_neck=True,
         is_normalize_to_bbox=False,
         is_normalize_to_pose=True,
-        is_normalize_rotation=True,
+        is_normalize_rotation=False,
         is_gt_2d_pose=is_gt_2d_pose,
         subset_percentage=subset_percentage
     )
@@ -201,7 +201,7 @@ def construct_synthetic_cabin_ir(
         is_center_to_neck=True,
         is_normalize_to_bbox=False,
         is_normalize_to_pose=True,
-        is_normalize_rotation=True,
+        is_normalize_rotation=False,
         is_gt_2d_pose=is_gt_2d_pose,
         subset_percentage=subset_percentage
     )
@@ -217,7 +217,7 @@ def construct_synthetic_cabin_ir(
         is_center_to_neck=True,
         is_normalize_to_bbox=False,
         is_normalize_to_pose=True,
-        is_normalize_rotation=True,
+        is_normalize_rotation=False,
         is_gt_2d_pose=is_gt_2d_pose
     )
     train_loader = DataLoader(
@@ -272,7 +272,7 @@ def construct_synthetic_cabin_ir_1m_v2(
         is_center_to_neck=True,
         is_normalize_to_bbox=False,
         is_normalize_to_pose=True,
-        is_normalize_rotation=True,
+        is_normalize_rotation=False,
         is_gt_2d_pose=is_gt_2d_pose,
         included_view=viewpoints,
         subset_percentage=subset_percentage
@@ -289,7 +289,7 @@ def construct_synthetic_cabin_ir_1m_v2(
         is_center_to_neck=True,
         is_normalize_to_bbox=False,
         is_normalize_to_pose=True,
-        is_normalize_rotation=True,
+        is_normalize_rotation=False,
         is_gt_2d_pose=is_gt_2d_pose,
         included_view=viewpoints,
         subset_percentage=subset_percentage
@@ -306,7 +306,7 @@ def construct_synthetic_cabin_ir_1m_v2(
         is_center_to_neck=True,
         is_normalize_to_bbox=False,
         is_normalize_to_pose=True,
-        is_normalize_rotation=True,
+        is_normalize_rotation=False,
         is_gt_2d_pose=is_gt_2d_pose,
         included_view=viewpoints
     )

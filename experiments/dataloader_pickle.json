@@ -1,0 +1,17 @@
+{
+  "A_Pillar_Codriver_Front_Left_Front_TopLeft_Rear_Mirror": {
+    "path": "/root/data/processed/synthetic_cabin_1m/all_views/dataloaders/A_Pillar_Codriver_Front_Left_Front_TopLeft_Rear_Mirror.pkl"
+  },
+  "A_Pillar_Driver_Front_Right_Front_TopRight": {
+    "path": "/root/data/processed/synthetic_cabin_1m/all_views/dataloaders/A_Pillar_Driver_Front_Right_Front_TopRight.pkl"
+  },
+  "Dashboard_Front_OMS_01": {
+    "path": "/root/data/processed/synthetic_cabin_1m/all_views/dataloaders/Dashboard_Front_OMS_01.pkl"
+  },
+  "all_views": {
+    "path": "/root/data/processed/synthetic_cabin_1m/all_views/dataloaders/all_views.pkl"
+  },
+  "Dashboard_Front_Front_Left_OMS_01": {
+    "path": "/root/data/processed/synthetic_cabin_1m/all_views/dataloaders/Dashboard_Front_Front_Left_OMS_01.pkl"
+  }
+}

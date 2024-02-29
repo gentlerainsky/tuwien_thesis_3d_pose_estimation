@@ -49,7 +49,6 @@ class DiscriminatorModel(nn.Module):
         self.l3 = nn.Linear(linear_dim, linear_dim)
         self.l4 = nn.Linear(linear_dim, linear_dim)
         # KCS path
-        # psi = 
         psi_shape = len(connections) * len(connections)
         self.kcs_l1 = nn.Linear(psi_shape, linear_dim)
         self.kcs_l2 = nn.Linear(linear_dim, linear_dim)

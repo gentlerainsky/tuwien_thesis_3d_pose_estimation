@@ -6,7 +6,7 @@ from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 
 # common setting
 max_epoch = 200
-val_check_period = 3
+val_check_period = 5
 early_stopping_patience = 3
 
 def create_trainer(
