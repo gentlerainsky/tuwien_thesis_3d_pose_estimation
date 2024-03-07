@@ -20,7 +20,7 @@ ALL_LIGHTNING_MODELS = [
 ]
 
 SYNTHETIC_CABIN_VIEWPOINTS = [
-    # 'A_Pillar_Codriver',
+    'A_Pillar_Codriver',
     'A_Pillar_Driver',
     'Rear_Mirror'
 ]

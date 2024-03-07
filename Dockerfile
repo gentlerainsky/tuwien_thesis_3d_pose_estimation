@@ -32,5 +32,6 @@ RUN pip install wandb
 RUN pip install einops
 RUN pip install timm
 RUN pip install tensorboard
+RUN pip install seaborn
 ADD Makefile /workspace
 # ADD requirements.txt /workspace
