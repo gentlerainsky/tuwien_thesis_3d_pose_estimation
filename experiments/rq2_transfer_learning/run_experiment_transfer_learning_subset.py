@@ -30,7 +30,7 @@ subset_setup = {
 }
 
 # subset_percentages = [1, 5, 10, 25, 50, 100]
-subset_percentages = [2]
+subset_percentages = [100]
 timer = Timer()
 timer.start()
 
