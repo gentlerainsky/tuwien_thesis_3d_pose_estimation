@@ -23,14 +23,15 @@ from experiments.experiment_config import (
 pl.seed_everything(1234)
 
 subset_setup = {
-    "single_actor": all_train_actors,
+    # "single_actor": all_train_actors,
+    "single_actor": ["vp1"],
     # "two_actors": two_actors_samples,
     # "four_actors": four_actors_samples,
     # "all_actors": [all_train_actors],
 }
 
-# subset_percentages = [1, 5, 10, 25, 50, 100]
-subset_percentages = [100]
+subset_percentages = [1, 2, 5, 10, 25, 50, 100]
+# subset_percentages = [2]
 timer = Timer()
 timer.start()
 
@@ -69,7 +70,7 @@ for subset_percentage in subset_percentages:
                     experiment.setup()
                     experiment.train()
                     experiment.test()
-                    experiment.remove_saved_model()
+                    # experiment.remove_saved_model()
                     experiment.print_result()
                     summerizer.add_result(
                         test_mpjpe=experiment.test_mpjpe,

@@ -60,6 +60,7 @@ class LitRepNet(pl.LightningModule):
         self.d_loss_log = []
         self.test_loss_log = []
         self.val_history = []
+        self.test_history = []
 
     def forward(self, x):
         y_hat = self.generator.lifter2D_3D(x)
@@ -261,6 +262,51 @@ class LitRepNet(pl.LightningModule):
     #     g_opt = torch.optim.Adam(self.generator.parameters(), lr=lr, betas=(b1, b2))
     #     d_opt = torch.optim.Adam(self.discriminator.parameters(), lr=lr, betas=(b1, b2))
     #     return g_opt, d_opt
+
+    def test_step(self, batch, batch_idx):
+        # Validation is the normal MPJPE calculation
+        x, y, valid, activities = self.preprocess_input(*self.preprocess_batch(batch))
+        y_hat = self.forward(x)
+        result = (
+            y_hat.detach().cpu().numpy(),
+            y.detach().cpu().numpy(),
+            valid.detach().cpu().numpy(),
+            activities,
+        )
+        self.evaluator.add_result(*result)
+        self.procrusted_evaluator.add_result(*result)
+
+    def on_test_epoch_end(self):
+        pjpe, mpjpe, activities_mpjpe, activity_macro_mpjpe = (
+            self.evaluator.get_result()
+        )
+        p_pjpe, p_mpjpe, p_activities_mpjpe, p_activity_macro_mpjpe = (
+            self.procrusted_evaluator.get_result()
+        )
+        self.log("mpjpe", mpjpe)
+        self.log("p_mpjpe", p_mpjpe)
+
+        if activity_macro_mpjpe is not None:
+            self.log("activity_macro_mpjpe", activity_macro_mpjpe)
+        if p_activity_macro_mpjpe is not None:
+            self.log("p_activity_macro_mpjpe", p_activity_macro_mpjpe)
+
+        self.evaluator.reset()
+        self.procrusted_evaluator.reset()
+        self.test_history.append(
+            {
+                "pjpe": pjpe,
+                "mpjpe": mpjpe,
+                "activities_mpjpe": activities_mpjpe,
+                "activity_macro_mpjpe": activity_macro_mpjpe,
+                "p_pjpe": p_pjpe,
+                "p_mpjpe": p_mpjpe,
+                "p_activities_mpjpe": p_activities_mpjpe,
+                "p_activity_macro_mpjpe": p_activity_macro_mpjpe,
+            }
+        )
+
+
 
     def configure_optimizers(self):
         lr = self.lr

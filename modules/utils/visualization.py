@@ -129,11 +129,18 @@ def plot_images(
             c=colors,
             marker='o',
             alpha=.7,
+            s=30
         )
         axes[idx].plot(
             gt_kp_2d[5:7, 0],
             gt_kp_2d[5:7, 1],
         )
+        # axes[idx].scatter(
+        #     (gt_kp_2d[5, 0] + gt_kp_2d[6, 0]) / 2,
+        #     (gt_kp_2d[5, 1] + gt_kp_2d[6, 1]) / 2,
+        #     c='white',
+        #     marker='^'
+        # )
         axes[idx].imshow(plt.imread(img_path))
         x, y, x2, y2 = bbox
         w, h = x2 - x, y2 - y
@@ -219,7 +226,8 @@ def plot_samples(
         img_figsize,
         plot_figsize,
         sample_indices,
-        is_plot_gt_skeleton=True
+        is_plot_gt_skeleton=True,
+        device='cuda'
     ):
     model.eval()
     img_ids = []
@@ -239,7 +247,7 @@ def plot_samples(
         root_3d = sample['root_3d']
         bbox = sample['bbox']
         valid = sample['valid']
-        estimated_pose = model(model.preprocess_x(torch.tensor(gt_keypoints_2d[:, :2])))
+        estimated_pose = model(model.preprocess_x(torch.tensor(gt_keypoints_2d[:, :2], device=device)))
         keypoints_3d = estimated_pose[0].cpu().reshape([-1, 3]).detach().numpy()
         if data_subset is not None:
             img_path = (dataset_root_path / 'images' / data_subset / sample['filenames']).as_posix()

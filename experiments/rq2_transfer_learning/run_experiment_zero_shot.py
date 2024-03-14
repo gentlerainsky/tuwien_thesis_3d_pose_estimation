@@ -29,7 +29,7 @@ for viewpoint in driver_and_act_pretrained_map.keys():
             LitModel=LitModel,
             constructed_loader=constructed_loader,
             pretrained_model_path=pretrained_model_path,
-            saved_model_path=f'saved_lifter_2d_3d_model/rq2/{LitModel.__name__}/zero_shot/{viewpoint}',
+            saved_model_path=f'saved_lifter_2d_3d_model/rq2/{LitModel.__name__}/zero_shot/{viewpoint}_with_all',
             model_parameters=dict(
                 exclude_ankle=True,
                 exclude_knee=True
