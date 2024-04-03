@@ -87,17 +87,17 @@ synthetic_cabin_ir_1m_preprocess_loaders = {
     },
 }
 
-# driver_and_act_pretrained_map = {
-#     'a_column_co_driver': 'A_Pillar_Codriver_Front_Left_Front_TopLeft_Rear_Mirror',
-#     'a_column_driver': 'A_Pillar_Driver_Front_Right_Front_TopRight',
-#     'inner_mirror': 'Dashboard_Front_OMS_01'
-# }
-
 driver_and_act_pretrained_map = {
-    'a_column_co_driver': 'all_views',
-    'a_column_driver': 'all_views',
-    'inner_mirror': 'all_views'
+    'a_column_co_driver': 'A_Pillar_Codriver_Front_Left_Front_TopLeft_Rear_Mirror',
+    'a_column_driver': 'A_Pillar_Driver_Front_Right_Front_TopRight',
+    'inner_mirror': 'Dashboard_Front_OMS_01'
 }
+
+# driver_and_act_pretrained_map = {
+#     'a_column_co_driver': 'all_views',
+#     'a_column_driver': 'all_views',
+#     'inner_mirror': 'all_views'
+# }
 
 def get_processed_synthetic_cabin_ir_1m_loaders(viewpoint_name):
     if type(viewpoint_name) is list:
