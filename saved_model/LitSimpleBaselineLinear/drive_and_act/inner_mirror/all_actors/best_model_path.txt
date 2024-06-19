@@ -1,1 +1,0 @@
-saved_lifter_2d_3d_model/LitSimpleBaselineLinear/drive_and_act/inner_mirror/all_actors/lightning_logs/version_0/checkpoints/epoch=74-step=26775.ckpt

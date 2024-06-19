@@ -135,12 +135,6 @@ def plot_images(
             gt_kp_2d[5:7, 0],
             gt_kp_2d[5:7, 1],
         )
-        # axes[idx].scatter(
-        #     (gt_kp_2d[5, 0] + gt_kp_2d[6, 0]) / 2,
-        #     (gt_kp_2d[5, 1] + gt_kp_2d[6, 1]) / 2,
-        #     c='white',
-        #     marker='^'
-        # )
         axes[idx].imshow(plt.imread(img_path))
         x, y, x2, y2 = bbox
         w, h = x2 - x, y2 - y
@@ -201,15 +195,8 @@ def plot_skeleton(
             )
         axes[idx].set_title(f'MPJPE = {mpjpe:.2f}')
         axes[idx].legend(loc='lower center')
-        # axes[idx].set_xlabel('X')
         axes[idx].set_ylabel('Depth')
-        # axes[idx].set_zlabel('Y')
-        # axes[idx].set_xlim([-0.5, -0.5 + 0.8])
-        # axes[idx].set_zlim([-0.5, -0.5 + 0.8])
-        # axes[idx].set_ylim([0.7, 0.7 + 0.8])
         axes[idx].axes.set_aspect('equal')
-        # axes[idx].xaxis.set_tick_params(labelsize=8, ticks=None)
-        # axes[idx].yaxis.set_tick_params(labelsize=8, ticks=None)
         axes[idx].xaxis.set_ticks([])
         axes[idx].zaxis.set_ticks([])
         axes[idx].yaxis.set_tick_params(labelsize=8)
@@ -291,7 +278,6 @@ def plot_samples(
         figsize=plot_figsize,
         colors=joint_colors[:num_joints],
         is_plot_gt_skeleton=is_plot_gt_skeleton,
-        # elev=10., azim=90 + 45//2, roll=0
         elev=10, azim=-90, roll=0
     )
 

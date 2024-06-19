@@ -139,7 +139,3 @@ def infer_2d_pose_estimation(
             output_file = result_folder / f"keypoint_detection_{image_set}.json"
         with output_file.open("w") as f:
             json.dump(results, f, indent=2)
-
-
-if __name__ == "__main__":
-    pass

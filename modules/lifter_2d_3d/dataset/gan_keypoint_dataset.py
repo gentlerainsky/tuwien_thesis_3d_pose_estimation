@@ -3,10 +3,7 @@ import numpy as np
 from modules.lifter_2d_3d.utils.normalization import (
     center_pose2d_to_neck,
     center_pose3d_to_neck,
-    normalize_2d_pose_to_image,
-    normalize_2d_pose_to_bbox,
     normalize_2d_pose_to_pose,
-    normalize_rotation,
     rotate2D_to_x_axis
 )
 

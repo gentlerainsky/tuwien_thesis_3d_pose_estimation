@@ -1,1 +1,0 @@
-saved_lifter_2d_3d_model/LitSimpleBaselineLinear/synthetic_cabin_ir/A_Pillar_Codriver_predicted/lightning_logs/version_0/checkpoints/epoch=74-step=43875.ckpt

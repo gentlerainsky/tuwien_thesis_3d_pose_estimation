@@ -1,1 +1,0 @@
-saved_lifter_2d_3d_model/LitSimpleBaselineLinear/synthetic_cabin_ir_1m/Rear_Mirror_gt/lightning_logs/version_0/checkpoints/epoch=124-step=146375.ckpt

@@ -1,7 +1,6 @@
 from mmengine.config import Config
 from mmengine.runner import Runner
-from mmpose.datasets import CocoDataset
-from mmpose.apis import init_model, MMPoseInferencer, inference_topdown
+from mmpose.apis import inference_topdown
 from mmpose.visualization import PoseLocalVisualizer
 import mmcv
 import matplotlib.pyplot as plt
@@ -46,17 +45,10 @@ class PoseEstimator2D:
 
         # Training
         self.config.train_cfg['by_epoch'] = True
-        # self.config.train_cfg['max_iters'] = 1000
         self.config.train_cfg['val_interval'] = 1
         self.config.train_cfg['max_epochs'] = 5
         self.config.train_dataloader['dataset']['data_root'] = self.config.data_root
         self.config.train_dataloader['dataset']['ann_file'] = 'annotations/person_keypoints_train.json'
-        # if self.use_groundtruth_bbox:
-        #     self.config.train_dataloader['dataset']['bbox_file'] = \
-        #         'person_detection_results/ground_truth_human_detection_train.json'
-        # else:
-        #     self.config.train_dataloader['dataset']['bbox_file'] = \
-        #         'person_detection_results/human_detection_train.json'
         self.config.train_dataloader['dataset']['data_prefix']['img'] = 'images/train'
 
         # Validation
@@ -201,6 +193,3 @@ class PoseEstimator2D:
 
         imgplot = plt.imshow(pose_local_visualizer.get_image())
         plt.show()
-
-if __name__ == '__main__':
-    pass

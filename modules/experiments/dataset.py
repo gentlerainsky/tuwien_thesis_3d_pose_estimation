@@ -91,9 +91,9 @@ def construct_drive_and_act_dataset(
         exclude_knee=True,
         bbox_format='xyxy',
         is_center_to_neck=True,
-        # is_normalize_to_bbox=False,
-        # is_normalize_to_pose=True,
-        # is_normalize_rotation=False,
+        is_normalize_to_bbox=False,
+        is_normalize_to_pose=True,
+        is_normalize_rotation=False,
         remove_activities=remove_activities,
         subset_percentage=subset_percentage
     )
@@ -108,9 +108,9 @@ def construct_drive_and_act_dataset(
         exclude_knee=True,
         bbox_format='xyxy',
         is_center_to_neck=True,
-        # is_normalize_to_bbox=False,
-        # is_normalize_to_pose=True,
-        # is_normalize_rotation=False,
+        is_normalize_to_bbox=False,
+        is_normalize_to_pose=True,
+        is_normalize_rotation=False,
         subset_percentage=subset_percentage
     )
     test_dataset = DriveAndActKeypointDataset(
@@ -123,9 +123,9 @@ def construct_drive_and_act_dataset(
         exclude_ankle=True,
         exclude_knee=True,
         bbox_format='xyxy',
-        # is_center_to_neck=True,
-        # is_normalize_to_bbox=False,
-        # is_normalize_to_pose=True,
+        is_center_to_neck=True,
+        is_normalize_to_bbox=False,
+        is_normalize_to_pose=True,
         is_normalize_rotation=False
     )
     train_dataset.make_weights_for_balanced_classes()

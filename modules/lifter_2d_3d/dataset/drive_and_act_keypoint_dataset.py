@@ -46,7 +46,6 @@ class DriveAndActKeypointDataset(BaseDataset):
         activity_types = self.activities
         activity_list = list(activity_types)
         activity_to_id = {activity: idx for idx, activity in enumerate(activity_list)}
-        # id_to_activity = {idx: activity for idx, activity in enumerate(activity_list)}
         count = [0] * len(activity_types)
         for activity in image_activies:
             count[activity_to_id[activity]] += 1

@@ -4,10 +4,7 @@ import torch.nn.functional as F
 import numpy as np
 import math
 from typing import Tuple, Union, List
-from modules.lifter_2d_3d.model.jointformer.network.transformer import (
-    PositionalEncoding,
-    EncoderLayer,
-)
+from modules.lifter_2d_3d.model.jointformer.network.transformer import EncoderLayer
 from modules.lifter_2d_3d.model.semgcn.network.sem_graph_conv import SemGraphConv
 
 

@@ -6,7 +6,6 @@ from modules.lifter_2d_3d.utils.normalization import (
     normalize_2d_pose_to_image,
     normalize_2d_pose_to_bbox,
     normalize_2d_pose_to_pose,
-    normalize_rotation,
     rotate2D_to_x_axis
 )
 
@@ -148,13 +147,6 @@ class BaseDataset:
                     print(f'skipping problematic image {ann_info["id"]}')
                 continue
 
-            # left_shoulder_index=5, right_shoulder_index=6
-            # if (pose_3d[5].sum() == 0) or (pose_3d[6].sum() == 0):
-            #     if not self.is_silence:
-            #         print(f'skip images which both shoulders are not visible. {ann_info["id"]}')
-            #     continue
-
-            # if (pose_3d[valid_kp].shape[0] < (pose_3d.shape[0] // 4)):
             if (pose_3d[valid_kp].shape[0] < 5):
                 if not self.is_silence:
                     print(f'skip images which contains too few visible keypoints. {ann_info["id"]}')
